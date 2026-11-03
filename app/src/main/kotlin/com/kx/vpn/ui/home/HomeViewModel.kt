@@ -16,12 +16,31 @@ class HomeViewModel(val repository: WireGuardSessionRepository) : ViewModel() {
     private val mutableError = MutableStateFlow(false)
     val error = mutableError.asStateFlow()
 
+    private val mutableRemoved = MutableStateFlow(false)
+    val removed = mutableRemoved.asStateFlow()
+
+    fun removeProfile() {
+        if (mutableBusy.value) return
+        mutableBusy.value = true
+        mutableError.value = false
+        mutableRemoved.value = false
+        viewModelScope.launch {
+            try {
+                mutableRemoved.value = repository.removeOwnedConfig()
+                mutableError.value = !mutableRemoved.value
+            } catch (cancelled: CancellationException) { throw cancelled
+            } catch (_: Exception) { mutableError.value = true
+            } finally { mutableBusy.value = false }
+        }
+    }
+
     init { viewModelScope.launch { repository.restore() } }
 
     fun importConfig(read: suspend () -> BoundedFileReader.Outcome) {
         if (mutableBusy.value) return
         mutableBusy.value = true
         mutableError.value = false
+        mutableRemoved.value = false
         viewModelScope.launch {
             try {
                 when (val outcome = read()) {

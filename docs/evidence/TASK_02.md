@@ -173,3 +173,30 @@ withheld and malformed reports do not reveal contents. The existing runner's sev
 exit/evidence cases still pass; original failing test exit status is preserved. No
 workflow changes, hidden retries, skipped assertions or weakened CI gates. All
 prior collector behavior and other agents' work are retained.
+
+## Follow-up: confirmed local profile removal
+
+Added an actual Home removal action with localized confirmation/cancel controls and
+accessible success feedback. The single encrypted KX profile is removed only while
+idle; running/connecting/disconnecting and CleanupRequired states reject deletion at
+the repository/controller boundary, not merely via a disabled button. New connection,
+replacement and removal operations share the existing serialization locks.
+
+AtomicFile.delete() returns no result, so the store explicitly checks absence of the
+base, backup and new-file paths before publishing success/Unconfigured. File removal
+errors propagate to the existing non-secret UI error. This is **not** physical secure
+erasure: original user-selected files, the gateway account, the reusable AndroidKeyStore
+alias and any storage remnants are not claimed wiped. No undo/remote-revocation claim.
+
+Five unit regressions cover successful idle removal, blocked active deletion, blocked
+uncertain cleanup, failed/throwing storage removal and cancellation. Added device UI
+coverage checks that cancelling leaves the encrypted profile intact, confirming removes
+it, original nonsecret fixture is untouched, and the success text/state match actual
+file absence. The test uses a nonsecret storage-only fixture, never a real endpoint
+or fabricated VPN connection, and refuses to replace any pre-existing user profile.
+
+Local session test run: **24 tests passed** (standalone Kotlin2.1.20/JDK17/coroutines1.8.0
++ JUnit4.13.2, not app Gradle verification). XML/diff checks passed. Automatic exact-head
+Android build/device CI is required before calling the new deletion flow verified.
+No merge, workflow edits or other-agent modifications. Controlled transport and all
+previous verification gaps remain; TASK_03–06 are not represented as started/delivered.

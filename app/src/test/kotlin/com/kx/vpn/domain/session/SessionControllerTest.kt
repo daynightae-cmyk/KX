@@ -233,4 +233,48 @@ class SessionControllerTest {
         assertEquals(0, driver.stops)
         assertEquals(SessionPhase.Up, session.state.value.phase)
     }
+    @Test fun idleRemovalCallsStorageAndReturnsToUnconfigured() = runBlocking {
+        val session = SessionController(Driver()); session.configured()
+        var removals = 0
+        assertTrue(session.removeProfile { removals++; true })
+        assertEquals(1, removals)
+        assertEquals(SessionSnapshot(), session.state.value)
+    }
+
+    @Test fun activeRemovalDoesNotTouchStoredProfile() = runBlocking {
+        val session = SessionController(Driver()); session.configured(); session.connect()
+        var touched = false
+        assertTrue(!session.removeProfile { touched = true; true })
+        assertTrue(!touched)
+        assertEquals(SessionPhase.Up, session.state.value.phase)
+    }
+
+    @Test fun uncertainShutdownCannotEraseProfile() = runBlocking {
+        val session = SessionController(Driver().apply { succeeds = false })
+        session.configured(); session.connect()
+        var touched = false
+        assertTrue(!session.removeProfile { touched = true; true })
+        assertTrue(!touched)
+        assertEquals(SessionProblem.CleanupRequired, session.state.value.problem)
+    }
+
+    @Test fun failedStorageRemovalNeverReportsUnconfigured() = runBlocking {
+        val session = SessionController(Driver()); session.configured()
+        assertTrue(!session.removeProfile { false })
+        assertEquals(SessionPhase.Disconnected, session.state.value.phase)
+        try { session.removeProfile { throw java.io.IOException("synthetic removal error") } }
+        catch (_: java.io.IOException) { /* Must propagate, not claim success. */ }
+        assertEquals(SessionPhase.Disconnected, session.state.value.phase)
+    }
+
+    @Test fun cancelledRemovalKeepsThePreviousSnapshot() = runBlocking {
+        val session = SessionController(Driver()); session.configured()
+        val entered = CompletableDeferred<Unit>()
+        val deleting = launch {
+            session.removeProfile { entered.complete(Unit); kotlinx.coroutines.awaitCancellation() }
+        }
+        entered.await(); deleting.cancel(); deleting.join()
+        assertTrue(deleting.isCancelled)
+        assertEquals(SessionPhase.Disconnected, session.state.value.phase)
+    }
 }

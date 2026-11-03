@@ -105,4 +105,10 @@
 No measured network results available.</string>
     <string name="tunnel_limits">WireGuard only. No server fleet, subscription, verified handshake, leak protection or kill-switch claim. Routing depends on your file. Android consent is requested only when you connect.</string>
     <string name="tunnel_cleanup_required">Tunnel shutdown is unconfirmed. Retry Disconnect or use Android VPN settings. New connections and profile replacement are blocked until shutdown is confirmed.</string>
+    <string name="tunnel_remove_profile">Remove saved profile</string>
+    <string name="tunnel_remove_title">Remove this local profile?</string>
+    <string name="tunnel_remove_body">Removes the single encrypted WireGuard profile saved by KX on this device. Your original imported file and gateway account remain untouched. No physical secure-erasure guarantee; no undo is provided.</string>
+    <string name="tunnel_remove_confirm">Remove profile</string>
+    <string name="tunnel_remove_cancel">Keep profile</string>
+    <string name="tunnel_profile_removed">Local encrypted profile removed. Original file unchanged.</string>
 </resources>

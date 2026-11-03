@@ -9,6 +9,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -46,6 +47,45 @@ class HomeDeviceTest {
         compose.onNodeWithText(context.getString(R.string.tunnel_save_config))
             .performScrollTo().assertIsDisplayed().assertIsEnabled()
         capture("home-owned-import")
+    }
+
+    @Test fun removalRequiresConfirmationAndLeavesOriginalDataUntouched() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val file = File(context.noBackupFilesDir, "owned-tunnel.enc")
+        check(!file.exists()) { "Refusing to overwrite existing profile" }
+        val original = File.createTempFile("kx-original-test-", ".txt", context.cacheDir)
+        original.writeText("NONSECRET-ORIGINAL-FIXTURE")
+        val store = com.kx.vpn.data.session.EncryptedTunnelStore(context)
+        try {
+            // Storage-only fixture; no keys/endpoint, no attempt to connect.
+            store.write("NONSECRET-LOCAL-FIXTURE".toByteArray())
+            val model = HomeViewModel(WireGuardSessionRepository(context))
+            compose.setContent {
+                CompositionLocalProvider(LocalKXMotion provides KXMotionSpec.Reduced) {
+                    KXTheme { HomeScreen(model) }
+                }
+            }
+            compose.waitUntil(timeoutMillis = 5_000) {
+                model.session.value.phase == com.kx.vpn.domain.session.SessionPhase.Disconnected
+            }
+            val remove = context.getString(R.string.tunnel_remove_profile)
+            compose.onNodeWithText(remove).performScrollTo().performClick()
+            compose.onNodeWithText(context.getString(R.string.tunnel_remove_title)).assertIsDisplayed()
+            capture("home-remove-confirmation")
+            compose.onNodeWithText(context.getString(R.string.tunnel_remove_cancel)).performClick()
+            check(file.exists()) { "Cancelling confirmation must preserve encrypted profile" }
+            compose.onNodeWithText(remove).performScrollTo().performClick()
+            compose.onNodeWithText(context.getString(R.string.tunnel_remove_confirm)).performClick()
+            compose.waitUntil(timeoutMillis = 5_000) { model.removed.value }
+            check(!file.exists())
+            check(original.readText() == "NONSECRET-ORIGINAL-FIXTURE")
+            check(model.session.value.phase == com.kx.vpn.domain.session.SessionPhase.Unconfigured)
+            compose.onNodeWithText(context.getString(R.string.tunnel_profile_removed)).performScrollTo().assertIsDisplayed()
+            capture("home-profile-removed")
+        } finally {
+            store.delete()
+            check(original.delete())
+        }
     }
 
     private fun capture(name: String) {

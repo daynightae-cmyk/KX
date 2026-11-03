@@ -68,7 +68,13 @@ class EncryptedTunnelStore(context: Context) {
         } finally { payload.fill(0) }
     }
 
-    @Synchronized fun delete() = file.delete()
+    @Synchronized fun delete() {
+        file.delete()
+        // AtomicFile.delete has no result: absence must be verified before UI success.
+        check(!file.baseFile.exists() &&
+            !File(file.baseFile.path + ".bak").exists() &&
+            !File(file.baseFile.path + ".new").exists()) { "Profile removal unconfirmed" }
+    }
 
     private companion object { const val ALIAS = "kx-owned-wireguard-v1" }
 }

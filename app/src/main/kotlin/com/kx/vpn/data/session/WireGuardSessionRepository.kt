@@ -68,6 +68,12 @@ class WireGuardSessionRepository(context: Context) {
         }
     }
 
+    suspend fun removeOwnedConfig(): Boolean = operations.withLock {
+        controller.removeProfile {
+            withContext(Dispatchers.IO) { store.delete(); true }
+        }
+    }
+
     suspend fun connect() = operations.withLock { controller.connect() }
     suspend fun disconnect() = operations.withLock { controller.disconnect() }
 }

@@ -37,6 +37,17 @@ class SessionController(private val driver: TunnelDriver) {
         mutable.value = SessionSnapshot(SessionPhase.Disconnected)
     }
 
+    /** Delete only an idle profile, publishing Unconfigured after storage confirms removal. */
+    suspend fun removeProfile(removeStored: suspend () -> Boolean): Boolean = lock.withLock {
+        if (mutable.value.problem == SessionProblem.CleanupRequired ||
+            mutable.value.phase !in setOf(SessionPhase.Unconfigured, SessionPhase.Disconnected, SessionPhase.Failed)) {
+            return@withLock false
+        }
+        if (!removeStored()) return@withLock false
+        mutable.value = SessionSnapshot()
+        true
+    }
+
     fun permissionDenied() {
         if (mutable.value.problem != SessionProblem.CleanupRequired &&
             mutable.value.phase in setOf(SessionPhase.Disconnected, SessionPhase.Failed)) {

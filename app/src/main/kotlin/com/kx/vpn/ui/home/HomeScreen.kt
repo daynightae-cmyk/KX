@@ -15,13 +15,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -49,6 +55,8 @@ fun HomeScreen(viewModel: HomeViewModel) {
     val snapshot by viewModel.session.collectAsStateWithLifecycle()
     val busy by viewModel.busy.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
+    val removed by viewModel.removed.collectAsStateWithLifecycle()
+    var confirmRemoval by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val glass = LocalKXGlass.current
     val cleanupRequired = snapshot.problem == com.kx.vpn.domain.session.SessionProblem.CleanupRequired
@@ -76,6 +84,22 @@ fun HomeScreen(viewModel: HomeViewModel) {
                 else BoundedFileReader.read(stream, WireGuardConfigValidator.MAX_CONFIG_BYTES)
             }
         }
+    }
+    if (confirmRemoval) {
+        AlertDialog(
+            onDismissRequest = { confirmRemoval = false },
+            title = { Text(stringResource(R.string.tunnel_remove_title)) },
+            text = { Text(stringResource(R.string.tunnel_remove_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmRemoval = false
+                    viewModel.removeProfile()
+                }, enabled = !active && !busy) { Text(stringResource(R.string.tunnel_remove_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmRemoval = false }) { Text(stringResource(R.string.tunnel_remove_cancel)) }
+            },
+        )
     }
     KXAtmosphericBackground {
         Column(Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState())
@@ -113,6 +137,15 @@ fun HomeScreen(viewModel: HomeViewModel) {
                     KXButton(stringResource(R.string.tunnel_save_config), {
                         picker.launch(arrayOf("application/octet-stream", "text/plain", "*/*"))
                     }, enabled = !active && !busy, style = KXButtonStyle.Secondary)
+                    KXButton(stringResource(R.string.tunnel_remove_profile), {
+                        confirmRemoval = true
+                    }, enabled = !active && !busy && snapshot.phase != SessionPhase.Unconfigured,
+                        style = KXButtonStyle.Ghost)
+                    if (removed) {
+                        Text(stringResource(R.string.tunnel_profile_removed),
+                            Modifier.semantics { liveRegion = androidx.compose.ui.semantics.LiveRegionMode.Polite },
+                            color = glass.textPrimary)
+                    }
                 }
             }
             GlassCard(Modifier.fillMaxWidth()) {
