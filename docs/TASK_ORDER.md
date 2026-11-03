@@ -23,3 +23,10 @@ Lifecycle: Reality → protect unique work → exact image QA → native UI+serv
 
 ## Nonstop handling for optional third-party dependencies
 Avoid getting stuck on external keys/providers. Defer an *optional external* capability into `docs/BLOCKERS.md`, disable unsupported UI, and merge the demonstrably complete **provider-independent scoped deliverable** only after all of its gates pass. Then take the next task. This is permitted by the owner; it does not mean the missing provider feature passed, and does not remove genuine core VPN/traffic verification. If the core essential slice fails, do not falsely merge it simply to advance the counter.
+
+## Owner extension — Founder / Developer Identity
+
+Within TASK_10's About/settings milestone, integrate
+[TASK_10A — Founder & Developer Identity](tasks/TASK_10A_founder-developer-identity.md)
+before the subsequent Phone Repair Lab work. Status: **NOT-IMPLEMENTED**. This adds
+scope, not a verified completion or permission to skip the existing serial gates.
