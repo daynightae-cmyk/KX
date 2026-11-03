@@ -20,7 +20,13 @@ object KXDimens {
     val SpaceXl: Dp = 32.dp
     val SpaceXxl: Dp = 48.dp
 
-    val ScreenPadding: Dp = 24.dp
+    /**
+     * Measured off the reference artwork, not chosen: `tools/measure_reference.py` puts the
+     * card edge at 16.6dp from the left and 16.2dp from the right on
+     * `04-connected-session.png`, and 14–18dp on `02-home-disconnected.png`. It was 24dp,
+     * which made every card on every screen narrower than the design it is meant to match.
+     */
+    val ScreenPadding: Dp = 16.dp
 
     /** Brand emblem sizes. Splash uses [OrbHero]; list rows use [OrbInline]. */
     val OrbHero: Dp = 232.dp
