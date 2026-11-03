@@ -131,4 +131,37 @@
     <string name="home_tab_stats">الإحصاءات</string>
     <string name="home_tab_settings">الإعدادات</string>
     <string name="home_tab_coming_soon">هذا القسم لم يُبنَ بعد. لا شيء هنا نشط.</string>
+
+    <!-- TASK_03 · اختيار الخادم -->
+    <string name="servers_title">اختر خادمًا</string>
+    <string name="servers_back">رجوع</string>
+    <string name="servers_search_hint">ابحث في نقاط النهاية لديك</string>
+    <string name="servers_filter_all">الكل</string>
+    <string name="servers_filter_fastest">الأسرع</string>
+    <string name="servers_filter_streaming">بث</string>
+    <string name="servers_filter_gaming">ألعاب</string>
+    <string name="servers_filter_streaming_unavailable">لا توجد نقطة نهاية تعلن دعم البث</string>
+    <string name="servers_filter_gaming_unavailable">لا توجد نقطة نهاية تعلن دعم الألعاب</string>
+    <string name="servers_filter_unavailable">غير متاح</string>
+    <string name="servers_recommended">الأسرع قياسًا</string>
+    <string name="servers_latency_unknown">--</string>
+    <string name="servers_measurement_stale">قديمة</string>
+    <string name="servers_measuring">جارٍ قياس إمكانية الوصول…</string>
+    <string name="servers_favorite">أضِف إلى المفضلة</string>
+    <string name="servers_unfavorite">أزِل من المفضلة</string>
+    <string name="servers_empty_title">لا توجد نقاط نهاية بعد</string>
+    <string name="servers_empty_body">يعرض KX فقط الخوادم التي هيّأتها أنت. استورد إعداد WireGuard لإضافة واحدة.</string>
+    <string name="servers_empty_import">استورد إعدادًا</string>
+    <string name="servers_offline">لا يوجد اتصال بالشبكة. لا يمكن قياس نقاط النهاية الآن.</string>
+    <string name="servers_switch_failed">تعذّر التبديل إلى تلك النقطة. أُعيدت النقطة السابقة.</string>
+    <string name="servers_chosen">المختارة</string>
+    <string name="servers_switching">جارٍ التبديل…</string>
+    <string name="servers_switch_dismiss">إخفاء</string>
+    <string name="servers_switch_failed_generic">تعذّر التبديل إلى تلك النقطة.</string>
+    <string name="servers_switch_failed_permission">رُفض إذن VPN، لذلك لم يحدث التبديل.</string>
+    <string name="servers_switch_failed_apply">لم يمكن تطبيق هذا الإعداد على هذا الجهاز.</string>
+    <string name="servers_switch_failed_connect">لم تُقَم القناة الجديدة. أُعيد اختيار نقطتك السابقة.</string>
+    <string name="servers_switch_failed_rollback">فشل التبديل ولم تُستعد النقطة السابقة.</string>
+    <string name="servers_switch_failed_unknown">لا يوجد إعداد محفوظ مطابق لتلك النقطة، لذلك لم يتغيّر شيء.</string>
+    <string name="servers_switch_failed_busy">قناة VPN مشغولة بعملية أخرى. اختر خادمًا مرة أخرى بعد انتهائها.</string>
 </resources>

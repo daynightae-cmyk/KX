@@ -1,6 +1,8 @@
 package com.kx.vpn.ui.imports
 
+import android.content.Context
 import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +19,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -45,17 +50,18 @@ import kotlinx.coroutines.withContext
  * First-run configuration entry.
  *
  * This is a real, working path: pick a file, read it under a hard byte ceiling, parse
- * it strictly, and report what was actually found. What it deliberately does *not* do
- * is pretend the profile is now active — there is no tunnel engine in this build, so
- * the apply control is disabled with the reason stated on screen rather than hidden or
- * faked. Secure storage of the profile is TASK_02; the full import workflow is TASK_09.
+ * it strictly, and report what was actually found. Saving puts the configuration into the
+ * keystore-encrypted profile vault, and the apply control is only enabled once that write
+ * actually succeeded — the screen never says a profile is stored when the vault refused it.
+ * Connecting is done from home, not from here.
  *
- * Nothing is uploaded and nothing is persisted here.
+ * Nothing is uploaded. The configuration text is the only thing persisted, and only after
+ * encryption.
  */
 @Composable
 fun ImportEntryScreen(
     viewModel: ImportEntryViewModel,
-    onSaveProfile: (String) -> Unit,
+    onSaveProfile: (configText: String, suggestedLabel: String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -63,26 +69,36 @@ fun ImportEntryScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    // The name the document provider reports for the picked file. It becomes the
+    // endpoint's label, so a list of imported profiles reads as the user's own file
+    // names rather than as a column of IP addresses.
+    var pickedName by remember { mutableStateOf<String?>(null) }
+
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? ->
         if (uri == null) {
             // A cancelled picker is not an error and must not look like one.
+            pickedName = null
             viewModel.reset()
             return@rememberLauncherForActivityResult
         }
+        pickedName = null
         viewModel.onReadStarted()
         scope.launch {
-            val outcome = withContext(Dispatchers.IO) {
+            val result = withContext(Dispatchers.IO) {
+                val name = runCatching { displayNameOf(context, uri) }.getOrNull()
                 val stream = runCatching {
                     context.contentResolver.openInputStream(uri)
                 }.getOrNull()
-                    ?: return@withContext BoundedFileReader.Outcome.Failed(
+                    ?: return@withContext name to BoundedFileReader.Outcome.Failed(
                         BoundedFileReader.FailureReason.Unreadable,
                     )
-                BoundedFileReader.read(stream, WireGuardConfigValidator.MAX_CONFIG_BYTES)
+                name to BoundedFileReader.read(stream, WireGuardConfigValidator.MAX_CONFIG_BYTES)
             }
-            viewModel.onBytesRead(outcome)
+            // Back on the main dispatcher, so writing composition state is legal here.
+            pickedName = result.first
+            viewModel.onBytesRead(result.second)
         }
     }
 
@@ -151,6 +167,7 @@ fun ImportEntryScreen(
                 is ImportUiState.Inspected -> InspectedCard(
                     summary = current.summary,
                     configText = current.configText,
+                    suggestedLabel = pickedName,
                     onSave = onSaveProfile,
                 )
             }
@@ -222,7 +239,8 @@ private fun IssueCard(
 private fun InspectedCard(
     summary: com.kx.vpn.domain.config.TunnelSummary,
     configText: String,
-    onSave: (String) -> Unit,
+    suggestedLabel: String?,
+    onSave: (configText: String, suggestedLabel: String?) -> Unit,
 ) {
     val glass = LocalKXGlass.current
     GlassCard(modifier = Modifier.fillMaxWidth()) {
@@ -272,12 +290,32 @@ private fun InspectedCard(
             // itself happens from home, not from here.
             KXPillButton(
                 label = stringResource(R.string.import_save),
-                onClick = { onSave(configText) },
+                onClick = { onSave(configText, suggestedLabel) },
                 emphasized = false,
                 modifier = Modifier.padding(top = KXDimens.SpaceSm),
             )
         }
     }
+}
+
+/**
+ * The name the document provider reports for [uri], without a path and without the
+ * ".conf" style extension.
+ *
+ * This is the user's own file name, read from the provider — never guessed from the
+ * host and never taken from the configuration's contents.
+ */
+private fun displayNameOf(context: Context, uri: Uri): String? {
+    if ("content" != uri.scheme) return uri.lastPathSegment
+    val projection = arrayOf(OpenableColumns.DISPLAY_NAME)
+    context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+        val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+        if (index < 0 || !cursor.moveToFirst()) return null
+        return cursor.getString(index)
+            .substringBeforeLast('.')
+            .takeIf { it.isNotBlank() }
+    }
+    return null
 }
 
 @Composable
