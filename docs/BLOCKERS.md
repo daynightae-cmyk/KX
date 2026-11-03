@@ -146,3 +146,53 @@ Recorded during TASK_01 because it changes what later tasks may claim.
   evidence.
 - **Owner action only:** either resolve the Vercel account or remove the integration from
   the repository. Nothing an implementation task can do about it.
+
+## TASK_04 / TASK_05 — 2026-11-04
+
+### BLOCKER-003 — Robolectric fetches its `android-all` jar from Maven during the test run
+
+- The first post-merge `Android CI` run on `eef3765` **failed**, leaving `main` red:
+
+  ```
+  ConnectionRingGeometryTest > classMethod FAILED
+      java.lang.AssertionError at MavenArtifactFetcher.java:130
+          Caused by: java.io.IOException at HttpURLConnection.java:2034
+  ```
+
+  `classMethod` means the class never executed. Three Robolectric classes failed the same
+  way in one run, two of which had passed on every previous run, and the device workflow —
+  the same suite on real emulators — was green in the same minute. Re-running the failed
+  job returned success.
+- **This is not a defect in the app and not a passed gate.** It is a reproducibility hole:
+  a Maven outage can turn `main` red at any time, and a re-run makes it green again without
+  anything changing, which is exactly how a real regression would hide.
+- **Safe fix, not yet done:** pin Robolectric's artifacts into the repository or the Gradle
+  cache (`robolectric.offline=true` with `robolectric.dependency.dir`, or resolve
+  `android-all` through the dependency configuration so the build cache holds it), then
+  make CI fail if the fetch is attempted.
+- **Claim ban:** CI results on Robolectric suites are recorded with their run IDs and with
+  any re-run stated, never as "it was green".
+
+### PROCESS GAP — evidence arrived after the merge, and the ledger disagreed with the tree
+
+- TASK_04 merged as `eef3765` with **no** `docs/evidence/TASK_04.md`, and TASK_05 was
+  opened with none either, while `docs/PROGRESS_LEDGER.md` still said `NOT_STARTED` for
+  both. A reader of the ledger would have concluded the app had no connected screen.
+- Both files were written later, from recorded CI runs and downloaded artifacts, and the
+  ledger rows now match the tree. The rule in `AGENTS.md` is that evidence ships in the
+  same task; recording the breach here is the minimum correction, not a substitute.
+- **Prevention:** the ledger row and the evidence file are now staged in the same commit as
+  the code they describe, and a task is not opened as a PR until both exist.
+
+### RESOLVED — a duplicate render was presented as evidence
+
+- `53-security-night-411-en-switches-off.png` was **byte-identical** to the switches-on
+  frame it was meant to contrast with: the only control whose stored value is visible is
+  Always-On VPN, and at 891dp it sits below the fold, so the scroll view drew the same five
+  rows twice.
+- The frame was retaken at a taller viewport, the stale file was deleted, and the guarantee
+  is now asserted on the semantics tree (`notEnforcedControlsNeverLookEnforced`) instead of
+  inferred from a picture. That test also caught its own first mistake: matching a node by
+  its visible title reads the inner `Text`, which carries no content description, so the
+  assertion passed against an empty string before it was rewritten to match the announced
+  description itself.
