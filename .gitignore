@@ -1,0 +1,27 @@
+# Build/tool/cache
+.gradle/
+**/build/
+.idea/
+*.iml
+local.properties
+.externalNativeBuild/
+.cxx/
+captures/
+*.apk
+*.aab
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+*.conf
+*.ovpn
+.env
+.env.*
+!.env.example
+*.log
+Thumbs.db
+.DS_Store
+# Arabic-named originals stay at checkout root. Tracked normalized copies live in assets/reference/
+/*.png
