@@ -1,6 +1,15 @@
 # KX VPN — KNOUX Private Network
 
-**Repository state (2026-11-03):** planning, brand references and executable agent task specifications. **No functional VPN app, APK, configured gateway, tested network or released service is claimed by this setup.**
+**Repository state (2026-11-03):** TASK_00 is merged into `main` — a real Kotlin +
+Jetpack Compose Android application now builds, lints and tests here. It contains the KX
+glass brand system, the Android 12+ splash integration, the DataStore-backed launch gate
+and CI. **There is still no VPN engine, no configured gateway, no tested network path and
+no released service.** See [docs/PROGRESS_LEDGER.md](docs/PROGRESS_LEDGER.md) for the
+per-task status and [docs/evidence/TASK_00.md](docs/evidence/TASK_00.md) for what was
+actually verified versus what was not.
+
+To build: `./gradlew :app:assembleDebug` (needs JDK 17+ and an Android SDK with
+`platforms;android-36`; set `ANDROID_HOME` or create a gitignored `local.properties`).
 
 ## Purpose
 Build a genuine native Android VPN client in Kotlin + Jetpack Compose based on the supplied KX circular glass-orbit identity. Work strictly in production-quality, verified vertical slices. A provider-free path (user-owned WireGuard endpoint/imported config) is the initial transport target; global exit servers are **not free by definition**.

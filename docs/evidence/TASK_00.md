@@ -18,8 +18,8 @@ and counts are copied from the tool output, not restated from memory.
 | G3 Automated | PASS | 33/33 JVM unit tests, `lintDebug` clean, `assembleDebug`, `assembleDebugAndroidTest`. |
 | G4 Runtime | **NOT VERIFIED — DEVICE_UNVERIFIED** | No accelerated emulator is possible on this machine. See blockers. |
 | G5 VPN/security | NOT APPLICABLE / partial | TASK_00 ships no transport, so there is nothing to leak-test. Permission and secret review done. |
-| G6 Integration | see PR section | PR + exact-SHA CI + merge recorded after this file is committed. |
-| G7 Handoff | PASS | This file, the ledger and `docs/BLOCKERS.md`. |
+| G6 Integration | PASS | PR #1, CI success on exact SHA `9278d72` (run 41599482673) and on merge SHA `98e6e46` (run 41600267115); `origin/main` verified. |
+| G7 Handoff | PASS | This file, 10 committed renders, the ledger and `docs/BLOCKERS.md`. |
 
 ## G0 — Reality
 
@@ -294,9 +294,121 @@ Wired end to end, not stubbed:
   intended geometry, colours, RTL layout and font scaling. They do not prove behaviour
   on a real GPU, real display cutouts, real insets or a real activity lifecycle.
 
+## G6 — Integration
+
+| Field | Value |
+|---|---|
+| BASE_SHA | `705af83d04399e6a3dd909015f8796a6cb0c0dbe` |
+| IMPLEMENTATION_SHA | `73ed9934fe295ad6ae6eb83e78a27e13270b94c9` (feature commit) |
+| Final branch HEAD before merge | `9278d72fb6bce645f7df22bab4504cbd174f5ad4` |
+| Branch | `task/00-identity-splash` |
+| PR | https://github.com/daynightae-cmyk/KX/pull/1 |
+| MERGE_SHA | `98e6e46cb5d21c4933bc47e949a0a122a16f25a8` (`Merge pull request #1 …`) |
+| ORIGIN_MAIN_SHA | `98e6e46cb5d21c4933bc47e949a0a122a16f25a8` — verified equal to MERGE_SHA after `git fetch` |
+
+### CI on the exact implementation SHA
+
+Run `41599482673`, `headSha = 9278d72fb6bce645f7df22bab4504cbd174f5ad4`, event
+`pull_request`, conclusion **success**.
+
+```
+Repository hygiene            pass  9s
+Build, lint and unit tests    pass  4m2s
+```
+
+Pulled from the CI log rather than inferred:
+
+```
+PASSED count: 33
+FAILED count: 0
+```
+
+Individual results visible in the log include
+`PreferencesLaunchStateRepositoryTest > anUnreadableStoreDegradesInsteadOfThrowing PASSED`,
+`LaunchDecisionTest > degradedStorageFailsTowardWelcomeEvenWhenFlagSaysComplete PASSED`,
+`BrandRenderTest > componentSheetDay PASSED`.
+
+### CI on the merged commit
+
+Run `41600267115`, branch `main`, `headSha = 98e6e46cb5d21c4933bc47e949a0a122a16f25a8`,
+event `push`, conclusion **success** (5m41s).
+
+### Two CI failures were found and fixed, not retried away
+
+The first two CI runs failed. Both were real defects in what I committed, and both were
+invisible on Windows:
+
+1. **`android-actions/setup-android@v3` cannot install the `tools` package**, which no
+   longer exists, and dies with `Warning: Failed to find package 'tools'`. The runner
+   already ships an SDK, so the job now verifies `ANDROID_HOME` and installs only
+   `platform-tools`, `platforms;android-36` and the two build-tools. Commit `7589e19`.
+2. **`gradlew` was committed as mode `100644`.** Git on Windows does not carry the exec
+   bit, so every Gradle step failed with `Permission denied` (exit 126). Fixed with
+   `git update-index --chmod=+x gradlew` (now `100755`) plus a defensive `chmod +x` in
+   the job. Commit `9278d72`.
+
+### Post-merge verification on `main`
+
+```
+git checkout main && git pull --ff-only origin main
+HEAD == origin/main == 98e6e46cb5d21c4933bc47e949a0a122a16f25a8
+./gradlew --no-daemon --rerun-tasks :app:testDebugUnitTest
+  → BUILD SUCCESSFUL, tests=33 failures=0 errors=0, 10 renders regenerated
+```
+
+One correction worth recording: the first post-merge run reported 33 passing while
+writing **no** screenshots. `org.gradle.caching=true` meant Gradle restored
+`test-results` **FROM-CACHE** instead of re-executing, because the screenshot directory
+is not a declared task output. The numbers were real but stale. The run above uses
+`--rerun-tasks` and is a genuine execution. A green "up-to-date" Gradle result is not
+proof that anything ran.
+
 ## Status
 
-`LOCALLY_VERIFIED` for the provider-independent TASK_00 scope, pending PR/CI/merge, at
-which point it becomes `MERGED_VERIFIED` **for that scope only**. It never becomes
-`DEVICE_UNVERIFIED`-free until a real device run happens, which is not possible on this
-machine without owner-level changes to Windows virtualization.
+`MERGED_VERIFIED` **for the provider-independent TASK_00 scope only**, at
+`origin/main = 98e6e46cb5d21c4933bc47e949a0a122a16f25a8`.
+
+Still outstanding and not claimed:
+
+- **G4 runtime on an emulator or device: `DEVICE_UNVERIFIED`.** See
+  `docs/BLOCKERS.md` BLOCKER-001.
+- No VPN transport, therefore no G5 handshake/route/DNS/leak proof exists — there is
+  nothing to prove yet.
+- No release build, no signing, no distribution. `RELEASE_VERIFIED` is not claimed and
+  cannot be until a physical device run plus signing and policy review happen.
+
+## Completion report (filled from measured values, template from `docs/tasks/TASK_00_identity-splash.md`)
+
+```yaml
+task: TASK_00
+status: MERGED_VERIFIED_LIMITED_SCOPE
+baseline_sha: 705af83d04399e6a3dd909015f8796a6cb0c0dbe
+implementation_sha: 9278d72fb6bce645f7df22bab4504cbd174f5ad4
+pr_url: https://github.com/daynightae-cmyk/KX/pull/1
+merge_sha: 98e6e46cb5d21c4933bc47e949a0a122a16f25a8
+origin_main_sha: 98e6e46cb5d21c4933bc47e949a0a122a16f25a8
+changed_files: 65 added/modified across app/, gradle/, .github/, tools/, docs/
+runtime: NOT_RUN_ON_DEVICE  # Robolectric JVM render only; see BLOCKER-001
+test_commands_results:
+  - "./gradlew --no-daemon --rerun-tasks :app:testDebugUnitTest -> BUILD SUCCESSFUL, 33 tests, 0 failures, 0 errors"
+  - "./gradlew --no-daemon :app:lintDebug -> BUILD SUCCESSFUL (abortOnError=true)"
+  - "./gradlew --no-daemon :app:assembleDebug -> app-debug.apk 13,127,035 B sha256 895ee16b3b3fcd851f8242d2def01585dbadeb99c84eaa208175aee74b38a5f6"
+  - "./gradlew --no-daemon :app:assembleDebugAndroidTest -> app-debug-androidTest.apk 1,032,112 B (compiled, not executed)"
+screen_comparison: "10 Compose renders in docs/evidence/TASK_00/ vs assets/reference/00-brand-logo.png; deviations listed above"
+ar_en_day_dark: VERIFIED_IN_JVM_RENDER  # values-ar resources + RTL layout + both themes
+android_emulator: NOT_VERIFIED  # no emulator package, no system image, no hypervisor
+physical_device: DEVICE_UNVERIFIED
+wireguard_handshake_and_network: NOT_APPLICABLE  # TASK_00 ships no transport
+secrets_and_permissions: VERIFIED  # zero permissions in manifest; allowBackup=false;
+                                   # extraction rules exclude pref/file/database;
+                                   # CI secret scan passes; store-content test asserts
+                                   # no key material in the persisted file
+external_blockers:
+  - "BLOCKER-001: no accelerated Android emulator or device on this machine"
+known_gaps:
+  - "G4 runtime (launch, logcat, rotation, insets, lifecycle) unverified on real Android"
+  - "Instrumented suite compiles but has never executed"
+  - "Robolectric renders approximate the reference's volumetric glass material"
+  - "Wordmark uses the platform sans, not the reference's custom letterforms"
+next_action: START_TASK_01_ON_MAIN
+```
