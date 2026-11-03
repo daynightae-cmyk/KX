@@ -91,6 +91,14 @@ class ProfileRepository(
     }
 
     /**
+     * The tunnel-side address the configuration under [id] assigns, or null when it
+     * declares none. Read from the user's own `Address` line — never guessed — and the
+     * only address-shaped value this app is able to show honestly.
+     */
+    fun tunnelAddressFor(id: String): String? =
+        configTextFor(id)?.let(com.kx.vpn.domain.servers.ProfileEndpointReader::tunnelAddress)
+
+    /**
      * Forgets one profile.
      *
      * The decrypted text cached for that id is dropped with it: asking the app to forget

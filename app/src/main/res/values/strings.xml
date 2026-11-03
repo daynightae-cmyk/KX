@@ -168,4 +168,29 @@
     <string name="servers_switch_failed_rollback">The switch failed and the previous endpoint could not be restored.</string>
     <string name="servers_switch_failed_unknown">No stored configuration matches that endpoint, so nothing was changed.</string>
     <string name="servers_switch_failed_busy">The tunnel is busy with another operation. Choose a server again once it settles.</string>
+
+    <!-- TASK_04 · connected session -->
+    <string name="connected_ring_description">%1$s. Session %2$s.</string>
+    <string name="connected_session_timer">Session %1$s</string>
+    <string name="connected_route_origin">This device</string>
+    <string name="connected_route_none">No server chosen</string>
+    <string name="connected_route_description">From %1$s to %2$s</string>
+    <string name="connected_download">Download</string>
+    <string name="connected_upload">Upload</string>
+    <string name="connected_ping">Ping</string>
+    <string name="connected_total_received">%1$s this session</string>
+    <string name="connected_total_sent">%1$s this session</string>
+    <string name="connected_no_sample">No sample yet</string>
+    <string name="connected_latency_unknown">--</string>
+    <string name="connected_ping_unreachable">Your server did not answer</string>
+    <string name="connected_ping_target">To your server</string>
+    <string name="connected_duration">Session duration</string>
+    <string name="connected_duration_monotonic">Monotonic clock</string>
+    <string name="connected_tunnel_address">Tunnel address</string>
+    <string name="connected_tunnel_address_from_config">From your configuration</string>
+    <string name="connected_exit_verified">Traffic verified through the tunnel.</string>
+    <string name="connected_exit_not_verified">The tunnel interface is up. Whether traffic actually leaves through it, and which public address a site sees, has NOT been verified — that needs an external check this build does not perform.</string>
+    <string name="connected_disconnect">Disconnect</string>
+    <string name="connected_change_server">Change server</string>
+    <string name="connected_measure_again">Measure again</string>
 </resources>

@@ -67,6 +67,35 @@ object ProfileEndpointReader {
             publicKey = key?.takeIf { it.isNotBlank() },
         )
     }
+
+    /**
+     * The address the configuration assigns to the local tunnel interface.
+     *
+     * This is the user's own `Address` line, read rather than invented, and it is what the
+     * connected screen is allowed to call an assigned IP. The **public** exit address is a
+     * different question and needs an external service; nothing here pretends to know it.
+     *
+     * Returns the first address of a possibly comma-separated list, with its prefix length,
+     * or null when the configuration declares none.
+     */
+    fun tunnelAddress(configText: String): String? {
+        var inInterface = false
+        for (rawLine in configText.lines()) {
+            val line = rawLine.trim()
+            if (line.isEmpty() || line.startsWith("#") || line.startsWith(";")) continue
+            if (line.startsWith("[")) {
+                if (inInterface) break
+                inInterface = line.equals("[Interface]", ignoreCase = true)
+                continue
+            }
+            if (!inInterface) continue
+            val assignment = line.split('=', limit = 2)
+            if (assignment.size != 2) continue
+            if (!assignment[0].trim().equals("Address", ignoreCase = true)) continue
+            return assignment[1].split(',').firstOrNull { it.isNotBlank() }?.trim()
+        }
+        return null
+    }
 }
 
 /**

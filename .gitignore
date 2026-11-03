@@ -26,3 +26,6 @@ Thumbs.db
 .DS_Store
 # Arabic-named originals stay at checkout root. Tracked normalized copies live in assets/reference/
 /*.png
+
+*.pdf
+*.zip

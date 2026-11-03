@@ -164,4 +164,29 @@
     <string name="servers_switch_failed_rollback">فشل التبديل ولم تُستعد النقطة السابقة.</string>
     <string name="servers_switch_failed_unknown">لا يوجد إعداد محفوظ مطابق لتلك النقطة، لذلك لم يتغيّر شيء.</string>
     <string name="servers_switch_failed_busy">قناة VPN مشغولة بعملية أخرى. اختر خادمًا مرة أخرى بعد انتهائها.</string>
+
+    <!-- TASK_04 · الجلسة المتصلة -->
+    <string name="connected_ring_description">%1$s. الجلسة %2$s.</string>
+    <string name="connected_session_timer">الجلسة %1$s</string>
+    <string name="connected_route_origin">هذا الجهاز</string>
+    <string name="connected_route_none">لم يُختر خادم بعد</string>
+    <string name="connected_route_description">من %1$s إلى %2$s</string>
+    <string name="connected_download">تنزيل</string>
+    <string name="connected_upload">رفع</string>
+    <string name="connected_ping">زمن استجابة</string>
+    <string name="connected_total_received">%1$s في هذه الجلسة</string>
+    <string name="connected_total_sent">%1$s في هذه الجلسة</string>
+    <string name="connected_no_sample">لا عيّنة بعد</string>
+    <string name="connected_latency_unknown">--</string>
+    <string name="connected_ping_unreachable">لم تُجب خادمتك</string>
+    <string name="connected_ping_target">إلى خادمتك</string>
+    <string name="connected_duration">مدة الجلسة</string>
+    <string name="connected_duration_monotonic">ساعة أحادية</string>
+    <string name="connected_tunnel_address">عنوان النفق</string>
+    <string name="connected_tunnel_address_from_config">من إعدادك</string>
+    <string name="connected_exit_verified">تم التحقق من مرور البيانات عبر النفق.</string>
+    <string name="connected_exit_not_verified">واجهة النفق تعمل. أما هل تمرّ البيانات فعليًا عبر النفق، وما العنوان العام الذي تراه المواقع، فلم يتحقق — لأن ذلك يتطلب فحصًا خارجيًا لا يجريه هذا الإصدار.</string>
+    <string name="connected_disconnect">قطع الاتصال</string>
+    <string name="connected_change_server">تغيير الخادم</string>
+    <string name="connected_measure_again">قِس من جديد</string>
 </resources>

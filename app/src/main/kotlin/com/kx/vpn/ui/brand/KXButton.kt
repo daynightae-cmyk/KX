@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,12 +41,18 @@ enum class KXButtonStyle { Primary, Secondary, Ghost }
  * user cannot use yet is "explicitly disabled with reason". A caller whose feature
  * is waiting on an external dependency passes the reason here, and the control
  * renders the explanation instead of silently doing nothing.
+ *
+ * `fillWidth` stretches the button itself, not just the wrapper. Without it a caller
+ * passing `Modifier.fillMaxWidth()` gets a full-width column with a content-sized
+ * button sitting at its start, which is what the connected screen's Disconnect control
+ * did before this parameter existed.
  */
 @Composable
 fun KXButton(
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    fillWidth: Boolean = false,
     style: KXButtonStyle = KXButtonStyle.Primary,
     enabled: Boolean = true,
     busy: Boolean = false,
@@ -81,6 +88,7 @@ fun KXButton(
         Box(
             modifier = Modifier
                 .defaultMinSize(minWidth = minWidth, minHeight = KXDimens.MinTouchTarget)
+                .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier)
                 .clip(shape)
                 .then(if (fill != null) Modifier.background(fill, shape) else Modifier)
                 .clickable(
