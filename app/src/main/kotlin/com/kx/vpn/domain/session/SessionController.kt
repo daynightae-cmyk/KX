@@ -58,12 +58,18 @@ class SessionController(private val driver: TunnelDriver) {
         }
     }
 
-    suspend fun disconnect() = lock.withLock {
+    suspend fun disconnect(preserveFailure: Boolean = false) = lock.withLock {
         if (mutable.value.phase == SessionPhase.Unconfigured || mutable.value.phase == SessionPhase.Disconnected) return@withLock
-        mutable.value = SessionSnapshot(SessionPhase.Disconnecting)
+        val previous = mutable.value
+        val retainError = preserveFailure && previous.phase == SessionPhase.Failed
+        if (!retainError) mutable.value = SessionSnapshot(SessionPhase.Disconnecting)
         try {
-            mutable.value = if (driver.stop()) SessionSnapshot(SessionPhase.Disconnected)
-            else SessionSnapshot(SessionPhase.Failed, SessionProblem.Backend)
+            val stopped = driver.stop()
+            mutable.value = when {
+                retainError -> previous
+                stopped -> SessionSnapshot(SessionPhase.Disconnected)
+                else -> SessionSnapshot(SessionPhase.Failed, SessionProblem.Backend)
+            }
         } catch (cancelled: CancellationException) {
             mutable.value = SessionSnapshot(SessionPhase.Failed, SessionProblem.Backend)
             throw cancelled

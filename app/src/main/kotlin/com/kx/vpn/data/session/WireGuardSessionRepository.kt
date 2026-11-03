@@ -21,7 +21,7 @@ class WireGuardSessionRepository(context: Context) {
     private val operations = Mutex()
     private val appScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO)
     private var restored = false
-    fun shutdown() { appScope.launch { disconnect() } }
+    fun shutdown() { appScope.launch { operations.withLock { controller.disconnect(preserveFailure = true) } } }
     private val tunnel = object : Tunnel {
         override fun getName() = "kx-owned"
         override fun onStateChange(newState: Tunnel.State) {

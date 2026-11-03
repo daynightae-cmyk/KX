@@ -96,4 +96,12 @@ class SessionControllerTest {
         connecting.join()
         assertEquals(SessionPhase.Failed, session.state.value.phase)
     }
+    @Test fun serviceCleanupCannotHideConnectionFailure() = runBlocking {
+        val driver = Driver().apply { throws = true }
+        val session = SessionController(driver); session.configured(); session.connect()
+        val failed = session.state.value
+        session.disconnect(preserveFailure = true)
+        assertEquals(1, driver.stops)
+        assertEquals(failed, session.state.value)
+    }
 }
