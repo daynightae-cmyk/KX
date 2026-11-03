@@ -10,7 +10,7 @@ below records only what has primary evidence, and each task's full evidence live
 | --- | --- | --- | --- | --- | --- |
 | TASK_00 | MERGED_VERIFIED (limited scope, see note) | `9278d72fb6bce645f7df22bab4504cbd174f5ad4` | [#1](https://github.com/daynightae-cmyk/KX/pull/1) | `98e6e46cb5d21c4933bc47e949a0a122a16f25a8` | 33/33 JVM tests re-executed on `main` with `--rerun-tasks`; lint clean; `assembleDebug` + `assembleDebugAndroidTest` green; CI success on both the PR SHA (run 41599482673) and the merge SHA (run 41600267115); 10 Compose renders in `docs/evidence/TASK_00/`. **DEVICE_UNVERIFIED** — no emulator/device (BLOCKER-001). |
 | TASK_01 | MERGED_VERIFIED (limited scope) | `0de690bfb0c37def858a65900dcf92d4095272d9` | [#10](https://github.com/daynightae-cmyk/KX/pull/10) | `572ac8e157f7c36b45d7d3e9495af21a75dc1f95` | 93/93 JVM tests; lint clean; debug+test APKs; 9 Compose renders; **instrumented suite executed on emulator API 26 and API 35 — 10/10, 0 failed, 0 skipped** (runs 41613401712, 41615330348) with real framebuffer screenshots committed. No physical device. No transport. |
-| TASK_02 | IN_PROGRESS / VPN_END_TO_END_BLOCKED | see draft branch `agent/task02-wireguard-session` | pending publication | none | 11 standalone state tests pass; Android/controlled-gateway proof pending; no merge |
+| TASK_02 | PARTIAL / VPN_END_TO_END_BLOCKED | `d650567bff5f1472d303c2f485cf7cc2684d7fc1` | [#11](https://github.com/daynightae-cmyk/KX/pull/11) draft | none | 105 JVM tests, lint/APKs pass; 13/13 device tests per API26/35; no handshake/traffic proof or merge |
 | TASK_03 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_04 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_05 | NOT_STARTED | none | none | none | NOT_RUN |

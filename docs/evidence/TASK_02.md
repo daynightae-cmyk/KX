@@ -73,3 +73,39 @@ Added a real-device AndroidKeystore round-trip/tamper test; not yet run at writi
 - Added device native-library loading/version check without connecting a tunnel,
   plus real Home unconfigured-state/import-scroll/screenshot checks. These are not
   consent/handshake/traffic proof and do not modify onboarding state.
+
+## Exact implementation CI — actual measured result
+
+Published code SHA `d650567bff5f1472d303c2f485cf7cc2684d7fc1`, draft
+https://github.com/daynightae-cmyk/KX/pull/11 (not merged).
+
+Build run https://github.com/daynightae-cmyk/KX/actions/runs/41622896512,
+job `125873245200` completed success. Full completed log was read:
+**105 executed unit-test PASSED lines**, including all **12 SessionController tests**;
+`lintDebug`, `assembleDebug`, `assembleDebugAndroidTest` each BUILD SUCCESSFUL.
+This is now app-pinned-dependency CI evidence, unlike the narrower standalone smoke
+run. Automatic review/hygiene succeeded; skipped draft reviewer is not an approval.
+
+Runtime run https://github.com/daynightae-cmyk/KX/actions/runs/41622896518:
+- API26 job `125872929600`: **13 instrumentation tests completed, 0 failures**,
+  BUILD SUCCESSFUL in 3m7s.
+- API35 job `125872929328`: **13 instrumentation tests completed, 0 failures**,
+  BUILD SUCCESSFUL in 3m26s.
+- The suite includes native GoBackend library loading/version, real AndroidKeyStore
+  encryption round-trip/tamper rejection, unconfigured Home disabled connect and
+  reachable import control, and existing first-run/navigation/recreation regressions.
+  **It does not connect a tunnel or prove a gateway handshake.**
+- Original screenshot directory was removed by Gradle in this run, so the collector
+  truthfully generated post-test relaunch PNGs instead. These are not proof of Home
+  visual fidelity. A subsequent test-only Gradle option retains original screenshots
+  for collection; final exact-head CI must validate that separate change.
+- Artifacts from this measured run:
+  API26 https://github.com/daynightae-cmyk/KX/actions/runs/41622896518/artifacts/13224048269
+  API35 https://github.com/daynightae-cmyk/KX/actions/runs/41622896518/artifacts/13225136874
+
+No secret configs or gateway addresses were generated/printed/committed. No merge,
+provider purchase, workflow edit, release, other-agent branch overwrite or completion
+of TASK_03–06 occurred. Controlled transport, consent/revocation/foreground lifecycle,
+true process-kill, network-change/airplane/doze, complete Home visuals and physical
+hardware remain acceptance gates. The automatic workflow is operational; no YAML
+request is needed. Status remains **PARTIAL / VPN_END_TO_END_BLOCKED**, not COMPLETE.
