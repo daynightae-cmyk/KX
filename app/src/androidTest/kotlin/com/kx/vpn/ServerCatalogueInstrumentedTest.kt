@@ -1,12 +1,12 @@
 package com.kx.vpn
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.semantics.SemanticsActions
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -152,7 +152,6 @@ class ServerCatalogueInstrumentedTest {
     private fun render(
         state: ServerListState,
         onSelect: (ServerRow) -> Unit,
-        onFilterChange: (ServerFilter) -> Unit = {},
     ) {
         compose.setContent {
             KXTheme {
@@ -166,7 +165,7 @@ class ServerCatalogueInstrumentedTest {
                     switchState = ServerSwitchState.IDLE,
                     switchFailure = null,
                     onQueryChange = {},
-                    onFilterChange = onFilterChange,
+                    onFilterChange = {},
                     onSelect = onSelect,
                     onToggleFavorite = {},
                     onDismissSwitchFailure = {},
@@ -216,13 +215,11 @@ class ServerCatalogueInstrumentedTest {
     }
 
     @Test
-    fun aDisabledCapabilityFilterIsVisibleButExposesNoClickAction() {
+    fun aDisabledCapabilityFilterIsPresentAndAnnouncedAsDisabled() {
         val rows = listOf(row("a", "Frankfurt", 23))
-        var applied = false
         render(
             ServerListState(rows = rows, generatedAtMillis = System.currentTimeMillis()),
             onSelect = {},
-            onFilterChange = { applied = true },
         )
 
         // The chip carries its own explanation in its accessibility label, so it is
@@ -230,14 +227,14 @@ class ServerCatalogueInstrumentedTest {
         // child node, which would make the matcher ambiguous.
         val chipLabel = context.getString(R.string.servers_filter_streaming) + ". " +
             context.getString(R.string.servers_filter_streaming_unavailable)
-        val chip = compose.onNodeWithContentDescription(chipLabel)
-            .assertIsDisplayed()
-            .fetchSemanticsNode()
 
-        assertFalse(
-            "a filter that cannot work must not offer a click action at all",
-            chip.config.contains(SemanticsActions.OnClick),
-        )
-        assertFalse("nothing was applied", applied)
+        // A `clickable(enabled = false)` still publishes an OnClick semantics action —
+        // that is how Compose announces "dimmed, not there" to TalkBack — so the
+        // meaningful guarantee is the enabled flag, not the absence of the action.
+        // Asserting the action was absent is what this test first tried, and the device
+        // correctly refused it.
+        compose.onNodeWithContentDescription(chipLabel)
+            .assertIsDisplayed()
+            .assertIsNotEnabled()
     }
 }
