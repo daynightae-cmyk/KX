@@ -1,12 +1,12 @@
 # TASK_00 — native launch foundation
 
-## Status: PR preparation / BLOCKED acceptance
+## Status: PR_OPEN (draft) / BLOCKED acceptance
 
 This is an implementation candidate, **not a completed task or VPN product**. TASK_01–10 have not been started. Do not merge or advance the queue without G0–G7 evidence.
 
 - BASE_SHA: `705af83d04399e6a3dd909015f8796a6cb0c0dbe`
-- IMPLEMENTATION_SHA: see the pull request's implementation commit (this file travels in that commit).
-- PR_URL: pending publication.
+- IMPLEMENTATION_SHA (published code commit): `27e4673238bc0a77bde95e268001611d76168682` (verified publisher commit).
+- PR_URL: https://github.com/daynightae-cmyk/KX/pull/2
 - MERGE_SHA: NONE
 - ORIGIN_MAIN_SHA at clone: `705af83d04399e6a3dd909015f8796a6cb0c0dbe`
 - Branch: `agent/kx-task-00-native-splash` (isolated from main and other agents).
@@ -65,3 +65,9 @@ Open a **draft** PR, have the owner install the supplied workflow template as `.
 ### Publication constraint
 
 The first draft publication was rejected with `workflow_file_not_allowed` / HTTP 403 because this integration cannot create GitHub Actions workflows. The tool confirmed **nothing was published**. No authentication or app permissions were changed. The same workflow is preserved as the inert `docs/ci/android.yml.example` plus a downloadable handoff; it must be installed by the owner at `.github/workflows/android.yml`. It does not run from `docs/ci/`. This is an additional blocker to exact-SHA CI, not a request for credentials.
+
+### Observed publication/check state
+
+Draft PR #2 was published and read back: isolated head branch, base `main` still `705af83d04399e6a3dd909015f8796a6cb0c0dbe`, `merged=false`. For the published implementation SHA above: no Android Actions build jobs exist; CodeRabbit was skipped, Gitar and Vercel Agent Review were in progress at observation. These are not Android build evidence. The separate Vercel deployment commit status is `failure`, description **Account is blocked.** No web deployment or account/billing change is part of this native Android PR; do not treat that deployment status as an Android compiler result. Final documentation-only commits have their own check state.
+
+Additional local validation: all XML and version-catalog TOML parsed, all 16 Arabic/English string keys match, main manifest declares no permissions and disables backup, `git diff --check` passed. Compose BOM metadata was retrieved, selecting UI/animation 1.8.0 and Material3 1.3.2; relevant Card/Button/animation/screenshot API source signatures were inspected. This is not a substitute for compilation or visual validation.

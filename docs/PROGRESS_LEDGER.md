@@ -4,7 +4,7 @@ The initial planning commit contained only references/documents. This isolated b
 
 | Task | Status | Implementation SHA | PR | Merge SHA | Test/device proof |
 | --- | --- | --- | --- | --- | --- |
-| TASK_00 | IN_PROGRESS / acceptance BLOCKED | see draft PR implementation commit | pending publication | none | 9 standalone domain tests passed; Android build/device/visual NOT_VERIFIED |
+| TASK_00 | PR_OPEN (draft), acceptance BLOCKED | `27e4673238bc0a77bde95e268001611d76168682` | [#2](https://github.com/daynightae-cmyk/KX/pull/2) | none | 9 standalone domain tests passed; Android build/device/visual NOT_VERIFIED |
 | TASK_01 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_02 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_03 | NOT_STARTED | none | none | none | NOT_RUN |

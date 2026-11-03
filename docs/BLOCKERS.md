@@ -19,3 +19,5 @@ For every new blocker append: task, service, failing command/error, exact scope 
 - No provider key is required for the current launch-only task. No user secret is requested. Global servers, transport and onboarding remain outside this task, not falsely delivered.
 
 - **CI activation — BLOCKED:** GitHub publisher rejected `.github/workflows/android.yml` with `workflow_file_not_allowed` (HTTP 403); it explicitly confirmed nothing published. The managed publisher lacks workflows permission and cannot be repaired by changing the app installation. Recovery: keep the executable workflow as inert `docs/ci/android.yml.example` and publish all normal app/test/evidence changes as a draft. Owner must add the supplied template as `.github/workflows/android.yml` before CI can run. No user token is requested.
+
+- **Separate Vercel deployment status (observed, outside Android scope):** published implementation commit has Vercel status `failure` / `Account is blocked.` This is not an Android build result. No web deployment or billing changes attempted. The draft remains unmerged and TASK_01 remains NOT_STARTED.
