@@ -87,7 +87,10 @@ class ConnectedSessionTracker(
         scope.launch { resolveEndpoint() }
         scope.launch {
             while (isActive) {
-                if (_state.value.isTunnelUp) sample()
+                if (_state.value.isTunnelUp) {
+                    refreshElapsed()
+                    sample()
+                }
                 delay(sampleIntervalMillis)
             }
         }

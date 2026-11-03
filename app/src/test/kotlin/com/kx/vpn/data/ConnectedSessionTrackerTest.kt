@@ -194,9 +194,19 @@ class ConnectedSessionTrackerTest {
         assertEquals(0L, tracker.state.value.elapsedMillis)
 
         advance(45_000L)
-        tracker.refreshElapsed()
 
         assertEquals(45_000L, tracker.state.value.elapsedMillis)
+    }
+
+    @Test
+    fun theTimerAdvancesWhenByteCountersDoNotChange() = fixture(intervalMillis = 1_000L) {
+        platform.stats = TunnelStats(totalRx = 1_000L, totalTx = 400L)
+        bringUp()
+        advance(1_000L)
+        advance(1_000L)
+        advance(1_000L)
+
+        assertEquals(3_000L, tracker.state.value.elapsedMillis)
     }
 
     @Test
