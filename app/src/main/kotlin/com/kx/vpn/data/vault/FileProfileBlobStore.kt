@@ -129,17 +129,26 @@ internal fun writeProfileBlobAtomically(
             java.nio.file.StandardCopyOption.REPLACE_EXISTING)
     },
 ) {
+    var failure: Throwable? = null
     try {
         java.io.FileOutputStream(temp).use { output ->
             output.write(bytes)
             output.fd.sync()
         }
         publish(temp, target)
-    } finally {
-        // Only our own temporary ciphertext is a cleanup target. Never truncate or
-        // delete the previous profile to make a failed replacement appear to pass.
+    } catch (error: Throwable) {
+        // Cleanup must not replace the actual publication error (including fatal
+        // errors). Retain it, then rethrow after best-effort temporary cleanup.
+        failure = error
+    }
+    try {
         if (temp.isFile && !temp.delete() && temp.exists()) {
             throw IOException("Temporary encrypted profile removal unconfirmed")
         }
+    } catch (cleanupError: Throwable) {
+        val original = failure
+        if (original == null) failure = cleanupError
+        else original.addSuppressed(cleanupError)
     }
+    failure?.let { throw it }
 }
