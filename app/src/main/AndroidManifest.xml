@@ -2,14 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!--
-        TASK_00 requests no permissions at all.
-
-        INTERNET, FOREGROUND_SERVICE and the VpnService intent filter are introduced
-        with the tunnel slice (TASK_02), not before it. Declaring them now would be a
-        privilege the app does not use, which docs/SECURITY_MODEL.md forbids under
-        "least privileges".
-    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:name=".KXApplication"
@@ -23,6 +18,11 @@
         android:theme="@style/Theme.KX.Starting"
         tools:targetApi="34">
 
+        <service android:name=".platform.TunnelSessionService"
+            android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="User-initiated WireGuard VPN lifecycle and notification" />
+        </service>
         <activity
             android:name=".MainActivity"
             android:exported="true"

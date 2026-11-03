@@ -18,6 +18,10 @@ mkdir -p "$evidence" || exit 2
 test_status=0
 "$gradlew" --no-daemon --stacktrace connectedDebugAndroidTest || test_status=$?
 printf '%s\n' "$test_status" > "$evidence/test-exit-code.txt"
+if (( test_status != 0 )); then
+    # Diagnostics only: never mask, retry or convert a failed test to success.
+    python3 tools/summarize_android_test_failures.py || echo "Failure summary unavailable; original test failure preserved."
+fi
 
 # Always attempt both collectors, including when tests fail. A collector failure
 # must not erase the original test exit status or turn it into a green job.

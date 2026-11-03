@@ -11,6 +11,10 @@ import com.kx.vpn.data.createLaunchStateRepository
  * seam it attaches to, so introducing a full DI framework now would be speculative.
  */
 class KXApplication : Application() {
+    val sessionRepository: com.kx.vpn.data.session.WireGuardSessionRepository by lazy {
+        com.kx.vpn.data.session.WireGuardSessionRepository(this)
+    }
+
 
     val launchStateRepository: LaunchStateRepository by lazy {
         createLaunchStateRepository(this)
