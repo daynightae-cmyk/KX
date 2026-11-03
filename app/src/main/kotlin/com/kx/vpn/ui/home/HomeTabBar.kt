@@ -63,6 +63,7 @@ fun HomeTabBar(
     selected: HomeTab,
     onSelect: (HomeTab) -> Unit,
     modifier: Modifier = Modifier,
+    enabledTabs: Set<HomeTab> = setOf(HomeTab.Home),
 ) {
     val glass = LocalKXGlass.current
     val unavailableLabel = stringResource(R.string.home_tab_coming_soon)
@@ -88,7 +89,9 @@ fun HomeTabBar(
         ) {
             HomeTab.entries.forEach { tab ->
                 val isSelected = tab == selected
-                val enabled = isSelected
+                // A tab is live when it is the current one or when it has been
+                // enabled because its screen actually exists.
+                val enabled = isSelected || tab in enabledTabs
                 // Resolved here, in a composable scope: stringResource cannot be called
                 // from inside the semantics block below.
                 val label = stringResource(tab.labelRes)

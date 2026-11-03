@@ -76,4 +76,14 @@ object KXPalette {
      * there is deliberately no "connected / protected" colour anywhere in this file.
      */
     val NeutralHint = Color(0xFF8E8AC0)
+
+    /**
+     * Measured latency text on the pale day surface.
+     *
+     * `Cyan` is the night value and is correct there; on `DaySurface` it lands at about
+     * 2:1 and the number becomes unreadable. This is a **derived accessibility token, not
+     * a sampled one** — the reference artwork is night-only, so there was nothing to read
+     * off it, and inventing a sampled provenance would be false.
+     */
+    val LatencyDay = Color(0xFF1B5FA8)
 }

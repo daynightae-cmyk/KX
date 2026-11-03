@@ -135,4 +135,37 @@
     <string name="home_tab_stats">Stats</string>
     <string name="home_tab_settings">Settings</string>
     <string name="home_tab_coming_soon">This section is not built yet. Nothing here is active.</string>
+
+    <!-- TASK_03 · server selection -->
+    <string name="servers_title">Select Server</string>
+    <string name="servers_back">Back</string>
+    <string name="servers_search_hint">Search your endpoints</string>
+    <string name="servers_filter_all">All</string>
+    <string name="servers_filter_fastest">Fastest</string>
+    <string name="servers_filter_streaming">Streaming</string>
+    <string name="servers_filter_gaming">Gaming</string>
+    <string name="servers_filter_streaming_unavailable">No endpoint declares streaming support</string>
+    <string name="servers_filter_gaming_unavailable">No endpoint declares gaming support</string>
+    <string name="servers_filter_unavailable">Not available</string>
+    <string name="servers_recommended">Fastest measured</string>
+    <string name="servers_latency_unknown">--</string>
+    <string name="servers_measurement_stale">stale</string>
+    <string name="servers_measuring">Measuring reachability…</string>
+    <string name="servers_favorite">Add to favourites</string>
+    <string name="servers_unfavorite">Remove from favourites</string>
+    <string name="servers_empty_title">No endpoints yet</string>
+    <string name="servers_empty_body">KX lists only the servers you have configured yourself. Import a WireGuard configuration to add one.</string>
+    <string name="servers_empty_import">Import a configuration</string>
+    <string name="servers_offline">No network connection. Endpoints cannot be measured right now.</string>
+    <string name="servers_switch_failed">Could not switch to that endpoint. The previous one was restored.</string>
+    <string name="servers_chosen">Chosen</string>
+    <string name="servers_switching">Switching…</string>
+    <string name="servers_switch_dismiss">Dismiss</string>
+    <string name="servers_switch_failed_generic">Could not switch to that endpoint.</string>
+    <string name="servers_switch_failed_permission">The VPN permission was declined, so the switch did not happen.</string>
+    <string name="servers_switch_failed_apply">That configuration could not be applied on this device.</string>
+    <string name="servers_switch_failed_connect">The new tunnel did not come up. Your previous endpoint is selected again.</string>
+    <string name="servers_switch_failed_rollback">The switch failed and the previous endpoint could not be restored.</string>
+    <string name="servers_switch_failed_unknown">No stored configuration matches that endpoint, so nothing was changed.</string>
+    <string name="servers_switch_failed_busy">The tunnel is busy with another operation. Choose a server again once it settles.</string>
 </resources>

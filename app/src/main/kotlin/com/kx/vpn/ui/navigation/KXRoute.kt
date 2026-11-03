@@ -18,8 +18,11 @@ object KXRoute {
     /** First-run configuration inspection. Local only, nothing persisted. */
     const val Import: String = "import"
 
-    /** Reached once onboarding is accepted. Still a placeholder until TASK_02. */
+    /** Reached once onboarding is accepted. */
     const val Home: String = "home"
+
+    /** The user's own endpoint catalogue. */
+    const val Servers: String = "servers"
 
     const val ArgStorageDegraded: String = "storageDegraded"
 }

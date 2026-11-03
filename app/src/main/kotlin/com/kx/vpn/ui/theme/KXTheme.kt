@@ -43,6 +43,12 @@ data class KXGlassScheme(
      * instead, which reads as shadow without going muddy.
      */
     val atmosphereVignette: Color,
+
+    /**
+     * Colour for a measured latency. Night can use the brand cyan; day needs a deep blue
+     * or the number disappears into the pale surface.
+     */
+    val latency: Color,
 ) {
     val glassFillBrush: Brush
         get() = Brush.linearGradient(listOf(glassTop, glassBottom))
@@ -83,6 +89,7 @@ private val NightGlass = KXGlassScheme(
         listOf(KXPalette.WordmarkInk, KXPalette.Violet, KXPalette.Cyan),
     ),
     atmosphereVignette = Color(0x70050A24),
+    latency = KXPalette.Cyan,
 )
 
 private val DayGlass = KXGlassScheme(
@@ -116,6 +123,7 @@ private val DayGlass = KXGlassScheme(
         listOf(KXPalette.WordmarkInk, KXPalette.Violet, Color(0xFF2F8FD8)),
     ),
     atmosphereVignette = Color(0x336537E8),
+    latency = KXPalette.LatencyDay,
 )
 
 val LocalKXGlass: ProvidableCompositionLocal<KXGlassScheme> =

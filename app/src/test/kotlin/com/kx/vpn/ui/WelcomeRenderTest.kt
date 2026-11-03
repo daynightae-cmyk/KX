@@ -152,7 +152,7 @@ class WelcomeRenderTest {
     fun importIdleNight360() {
         val viewModel = ImportEntryViewModel()
         render(dark = true) {
-            ImportEntryScreen(viewModel = viewModel, onSaveProfile = { })
+            ImportEntryScreen(viewModel = viewModel, onSaveProfile = { _, _ -> })
         }
         capture("16-import-idle-night-360-en")
     }
@@ -175,7 +175,7 @@ class WelcomeRenderTest {
             ),
         )
         render(dark = true) {
-            ImportEntryScreen(viewModel = viewModel, onSaveProfile = { })
+            ImportEntryScreen(viewModel = viewModel, onSaveProfile = { _, _ -> })
         }
         capture("17-import-rejected-night-360-en")
     }
@@ -201,7 +201,7 @@ class WelcomeRenderTest {
             ),
         )
         render(dark = true) {
-            ImportEntryScreen(viewModel = viewModel, onSaveProfile = { })
+            ImportEntryScreen(viewModel = viewModel, onSaveProfile = { _, _ -> })
         }
         capture("18-import-inspected-night-360-en")
     }
@@ -225,7 +225,7 @@ class WelcomeRenderTest {
             ),
         )
         render(dark = false) {
-            ImportEntryScreen(viewModel = viewModel, onSaveProfile = { })
+            ImportEntryScreen(viewModel = viewModel, onSaveProfile = { _, _ -> })
         }
         capture("19-import-inspected-day-411-ar")
     }
@@ -254,7 +254,7 @@ class WelcomeRenderTest {
             ),
         )
         render(dark = true) {
-            ImportEntryScreen(viewModel = viewModel, onSaveProfile = { })
+            ImportEntryScreen(viewModel = viewModel, onSaveProfile = { _, _ -> })
         }
         compose.waitForIdle()
         val tree = compose.onRoot(useUnmergedTree = true).printToString()

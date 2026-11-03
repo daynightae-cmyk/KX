@@ -92,6 +92,10 @@ class MainActivity : ComponentActivity() {
                     repository = kxApplication.launchStateRepository,
                     sessionManager = sessionManager,
                     profileRepository = kxApplication.profileRepository,
+                    catalogueRepository = kxApplication.endpointCatalogueRepository,
+                    latencyProbe = kxApplication.latencyProbe,
+                    switchController = kxApplication.endpointSwitchController,
+                    networkAvailability = kxApplication.networkAvailability,
                     onConnect = ::requestConnect,
                     modifier = Modifier.fillMaxSize(),
                 )
