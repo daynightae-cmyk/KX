@@ -1,0 +1,105 @@
+name: KX Android CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kx-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build, lint and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare Android SDK and Gradle wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${ANDROID_HOME:-}" || { echo "::error::ANDROID_HOME missing"; exit 1; }
+          command -v sdkmanager
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          test -f gradle/wrapper/gradle-wrapper.jar
+          chmod +x ./gradlew
+      - uses: gradle/actions/setup-gradle@v4
+      - name: JVM tests, lint, debug APK
+        run: ./gradlew --no-daemon --stacktrace testDebugUnitTest lintDebug assembleDebug
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kx-build-reports-debug-apk
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            app/build/reports/
+            app/build/test-results/
+            app/build/outputs/apk/debug/
+
+  instrumented:
+    name: Emulator API ${{ matrix.api }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [26, 35]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare Android tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${ANDROID_HOME:-}" || { echo "::error::ANDROID_HOME missing"; exit 1; }
+          command -v sdkmanager
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          chmod +x ./gradlew
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable KVM
+        shell: bash
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: |
+            set +e
+            ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
+            test_exit=$?
+            mkdir -p app/build
+            adb logcat -d -b crash > app/build/crash-logcat.txt 2>/dev/null
+            if adb shell test -d /sdcard/Android/data/com.knoux.kx/files/Pictures; then
+              adb pull /sdcard/Android/data/com.knoux.kx/files/Pictures app/build/runtime-screenshots
+            fi
+            exit "$test_exit"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kx-device-evidence-api-${{ matrix.api }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            app/build/reports/androidTests/
+            app/build/outputs/androidTest-results/
+            app/build/runtime-screenshots/
+            app/build/crash-logcat.txt
