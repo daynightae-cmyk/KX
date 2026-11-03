@@ -9,7 +9,7 @@ below records only what has primary evidence, and each task's full evidence live
 | Task | Status | Implementation SHA | PR | Merge SHA | Test/device proof |
 | --- | --- | --- | --- | --- | --- |
 | TASK_00 | MERGED_VERIFIED (limited scope, see note) | `9278d72fb6bce645f7df22bab4504cbd174f5ad4` | [#1](https://github.com/daynightae-cmyk/KX/pull/1) | `98e6e46cb5d21c4933bc47e949a0a122a16f25a8` | 33/33 JVM tests re-executed on `main` with `--rerun-tasks`; lint clean; `assembleDebug` + `assembleDebugAndroidTest` green; CI success on both the PR SHA (run 41599482673) and the merge SHA (run 41600267115); 10 Compose renders in `docs/evidence/TASK_00/`. **DEVICE_UNVERIFIED** — no emulator/device (BLOCKER-001). |
-| TASK_01 | PR_OPEN | pending | pending | pending | 93/93 JVM tests, lint clean, both APKs built, 9 new Compose renders. Instrumented suite rewritten for the real first-run routes and executed by the device-runtime workflow on emulator API 26/35. |
+| TASK_01 | MERGED_VERIFIED (limited scope) | `0de690bfb0c37def858a65900dcf92d4095272d9` | [#10](https://github.com/daynightae-cmyk/KX/pull/10) | `572ac8e157f7c36b45d7d3e9495af21a75dc1f95` | 93/93 JVM tests; lint clean; debug+test APKs; 9 Compose renders; **instrumented suite executed on emulator API 26 and API 35 — 10/10, 0 failed, 0 skipped** (runs 41613401712, 41615330348) with real framebuffer screenshots committed. No physical device. No transport. |
 | TASK_02 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_03 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_04 | NOT_STARTED | none | none | none | NOT_RUN |
@@ -25,7 +25,8 @@ Valid statuses: NOT_STARTED, IN_PROGRESS, LOCALLY_VERIFIED, DEVICE_UNVERIFIED, B
 ## Current integrated head
 
 `origin/main` advances with each accepted merge; read it live rather than trusting a
-number in this file. The chain so far, in order:
+number in this file. Current integrated head: `572ac8e157f7c36b45d7d3e9495af21a75dc1f95`
+(TASK_01 merged). The chain so far, in order:
 
 | Merge | What it was | CI |
 |---|---|---|
@@ -58,3 +59,6 @@ was discarded:
 
 ## External deferrals
 A task with a demonstrably complete, tested and merged provider-free supported scope may be `MERGED_VERIFIED` **only for that expressly limited scope**; list all optional `DEFERRED_EXTERNAL` features and their failures in `docs/BLOCKERS.md` and the task evidence. An external deferral is never a success claim about that feature.
+
+| `8bd1392` | PR #8 — NOTICE.md + continuation directive + APK hygiene gate | run 41608365980 success |
+| `572ac8e` | PR #10 — TASK_01 welcome, disclosure, config inspection | build 41615330466 + device 41615330348 success |
