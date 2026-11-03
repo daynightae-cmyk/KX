@@ -77,6 +77,7 @@ class KXApplication : Application() {
     val tunnelSessionManager: TunnelSessionManager by lazy {
         TunnelSessionManager(
             platform = AndroidTunnelPlatform(this),
+            elapsedRealtimeMillis = android.os.SystemClock::elapsedRealtime,
             profileSource = { profileRepository.activeConfigText() },
         )
     }
@@ -104,6 +105,7 @@ class KXApplication : Application() {
         // The chosen endpoint, not merely "some profile", decides what the tunnel uses.
         // Asynchronously: a cold start must not block the main thread on a disk read.
         applicationScope.launch { restoreActiveEndpoint() }
+        applicationScope.launch { com.kx.vpn.data.sampleTunnelStatistics(tunnelSessionManager) }
     }
 
     /**
