@@ -126,6 +126,12 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew --no-daemon :app:assembleDebug
 
+      - name: Verify pinned native libraries
+        # The WireGuard backend ships prebuilt .so blobs. The owner approved that
+        # repackaged backend, so the compensating control is that any change to any
+        # native library fails the build.
+        run: python3 tools/pin_native_libraries.py
+
       - name: Verify APK asset and secret hygiene
         # Proves the claims NOTICE.md makes, from the built artifact: no reference
         # design PNG is packaged, no bundled font, no key material in any text entry.

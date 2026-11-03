@@ -60,3 +60,44 @@ Recorded during TASK_01 because it changes what later tasks may claim.
 - **Still blocked and unchanged:** a physical Android device, and any real VPN transport
   proof (no gateway is provisioned), so G5 network claims remain blocked until an owned
   endpoint exists.
+
+
+### BLOCKER-002 — TASK_02 — no owned gateway for end-to-end tunnel proof
+
+- **Task:** TASK_02 (and every later task that claims transport behaviour).
+- **Service:** an authorised WireGuard gateway the app can actually connect to.
+- **Observed state:** none provisioned. The repo has no gateway, no key material, no
+  reachable peer. The only endpoints available are RFC 5737 documentation addresses
+  (`203.0.113.0/24`), which are deliberately unroutable.
+- **Root cause:** this machine has no Go and no NDK, so the tunnel library cannot be
+  built here, and no WireGuard server is installed on the host. Standing up a real
+  gateway needs either a remote host the owner controls, or a host-side WireGuard
+  install plus a keypair.
+- **Scope affected:** G5 handshake, route and DNS verification, IPv4/IPv6 leak checks,
+  traffic proof through a controlled egress, and disconnect-restores-normal-routing.
+- **Fallback actually implemented:** the complete local engine — the `VpnService`, the
+  state machine with a structural no-fake-connected guarantee, the platform consent
+  flow, the keystore-encrypted profile store and the dashboard. The instrumented suite
+  proves the service declaration, the permissions, the consent API and a real
+  AndroidKeyStore round-trip with tamper rejection.
+- **What this fallback does NOT prove:** that packets traverse a tunnel, that a peer
+  handshake completes, that DNS is tunnelled, that IPv6 does not leak, or that
+  disconnecting restores normal routing.
+- **Claim ban:** `VPN_END_TO_END_BLOCKED`. The tunnel is **not** claimed as verified,
+  "protected" is never rendered, and no traffic, speed, latency or IP figure is
+  displayed anywhere.
+- **Safe next action:** the owner provisions an owned gateway (or authorises a host
+  WireGuard install plus a generated keypair) and the G5 proof is run against it. The
+  engine does not need changing to accept it — the backend already speaks WireGuard.
+
+### DEFERRED / DISCLOSED — TASK_02 — prebuilt native tunnel binaries
+
+- The owner approved `com.zaneschepke:wireguard-android:1.2.1`, which ships **12
+  prebuilt `.so` files** with no corresponding source in this repository.
+- **They have not been audited.** Every one is SHA-256 pinned in
+  `docs/native-library-lock.md`, and `tools/pin_native_libraries.py` fails CI on any
+  drift. The gate was verified by tampering with a hash and watching it reject the
+  change.
+- A stronger option remains open and is not blocked by anything in the repo: build the
+  tunnel library from the upstream WireGuard Go source with a committed recipe. That
+  needs a Go toolchain and the Android NDK on the build machine.
