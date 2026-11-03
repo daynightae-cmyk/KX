@@ -79,3 +79,26 @@ follow-up. Full connected-screen/reference visuals, real controlled-transfer cou
 proof, owned gateway handshake/routes/DNS/leaks and physical hardware remain unverified.
 No new gateway, permissions, dependencies, workflows, provider or other-agent branch
 changes. No merge. TASK_04 is still PARTIAL, not a delivered five-task roadmap.
+
+## Follow-up — measured recent throughput, not a synthetic speed test
+
+Adds rate derivation from two consecutive real WireGuard total-byte samples and
+monotonic sample-completion timestamps. First, missing, negative, reset/decreasing,
+repeated/backward-time or >5-second-old intervals show unavailable, not zero. Actual
+unchanged counters over a valid interval yield measured zero. Current sample becomes
+the next baseline, so reset/stale intervals recover after a valid new consecutive pair.
+A disconnect/profile/session change clears sample/rate; the existing generation guard
+rejects an old result. Missing reads clear the pair so a later sample cannot bridge an
+unknown interval and call it a recent rate. No controlled payload or external service.
+
+The Home retains actual cumulative transfer totals and adds a localized recent rate
+using explicit B/s, KiB/s and MiB/s units. It is a short-window backend-counter average,
+not a bandwidth test, available capacity, Internet verification or leak protection.
+Floating-point multiplication after nonnegative subtraction avoids integer overflow
+at large counters. Native-read duration/timestamp jitter is not a calibrated benchmark.
+
+Six pure rate/format tests pass locally using standalone Kotlin2.1.20/JDK17/JUnit4.13.2;
+added manager integration test for gap/reconnect baseline reset. Full exact-head Android
+unit/Lint/build/device CI remains required. No visual/reference approval, real controlled
+transfer/gateway/handshake/DNS/route/teardown proof or whole TASK_04 completion is
+claimed. No merge, new dependencies/permissions/workflow or other-agent branch edits.

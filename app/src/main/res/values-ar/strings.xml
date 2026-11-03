@@ -165,4 +165,5 @@
     <string name="servers_switch_failed_unknown">لا يوجد إعداد محفوظ مطابق لتلك النقطة، لذلك لم يتغيّر شيء.</string>
     <string name="servers_switch_failed_busy">قناة VPN مشغولة بعملية أخرى. اختر خادمًا مرة أخرى بعد انتهائها.</string>
     <string name="home_tunnel_duration">مدة تفعيل النفق %1$s · الإنترنت غير متحقق</string>
+    <string name="home_metric_transfer_rate">مُنقول · المعدل الأخير %1$s</string>
 </resources>

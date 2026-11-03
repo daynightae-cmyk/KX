@@ -413,7 +413,9 @@ private fun MetricGrid(session: TunnelSessionState) {
             label = stringResource(R.string.home_metric_download),
             value = stats?.let { formatBytes(it.totalRx) }
                 ?: stringResource(R.string.home_metric_unknown),
-            unit = stringResource(R.string.home_metric_traffic_unit),
+            unit = stringResource(R.string.home_metric_transfer_rate,
+                session.trafficRate?.let { com.kx.vpn.domain.tunnel.formatTrafficRate(it.receivedBytesPerSecond) }
+                    ?: stringResource(R.string.home_metric_unknown)),
             modifier = Modifier.weight(1f),
         )
     }
@@ -424,7 +426,9 @@ private fun MetricGrid(session: TunnelSessionState) {
             label = stringResource(R.string.home_metric_upload),
             value = stats?.let { formatBytes(it.totalTx) }
                 ?: stringResource(R.string.home_metric_unknown),
-            unit = stringResource(R.string.home_metric_traffic_unit),
+            unit = stringResource(R.string.home_metric_transfer_rate,
+                session.trafficRate?.let { com.kx.vpn.domain.tunnel.formatTrafficRate(it.sentBytesPerSecond) }
+                    ?: stringResource(R.string.home_metric_unknown)),
             modifier = Modifier.weight(1f),
         )
         MetricTile(

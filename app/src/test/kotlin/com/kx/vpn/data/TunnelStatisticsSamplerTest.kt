@@ -87,4 +87,20 @@ class TunnelStatisticsSamplerTest {
         try { sampleTunnelStatistics(manager, 0) } catch (_: IllegalArgumentException) { rejected = true }
         assertTrue(rejected); assertEquals(0, platform.reads)
     }
+    @Test fun ratesResetAcrossMissingSamplesAndReconnect() {
+        var now = 1_000L
+        val platform = Platform()
+        val manager = TunnelSessionManager(platform, { now }) { "NONSECRET-TEST-CONFIG" }
+        manager.connect(); manager.onPlatformStateChanged(true)
+        manager.refreshStatistics(); assertNull(manager.state.value.trafficRate)
+        now += 1_000; platform.result = TunnelStats(220, 100); manager.refreshStatistics()
+        assertEquals(com.kx.vpn.domain.tunnel.TrafficRate(100.0, 20.0), manager.state.value.trafficRate)
+        now += 1_000; platform.result = null; manager.refreshStatistics()
+        assertNull(manager.state.value.trafficRate); assertNull(manager.state.value.counterSample)
+        now += 1_000; platform.result = TunnelStats(320, 120); manager.refreshStatistics()
+        assertNull(manager.state.value.trafficRate) // Requires a new consecutive pair.
+        manager.disconnect(); assertNull(manager.state.value.trafficRate)
+        manager.onPlatformStateChanged(false); manager.connect(); manager.onPlatformStateChanged(true)
+        now += 1_000; manager.refreshStatistics(); assertNull(manager.state.value.trafficRate)
+    }
 }

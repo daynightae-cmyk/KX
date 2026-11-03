@@ -60,6 +60,8 @@ data class TunnelSessionState(
     /** Process-local monotonic timestamps; never persisted or treated as Internet proof. */
     val startedAtElapsedMillis: Long? = null,
     val elapsedMillis: Long? = null,
+    val counterSample: com.kx.vpn.domain.tunnel.TrafficCounterSample? = null,
+    val trafficRate: com.kx.vpn.domain.tunnel.TrafficRate? = null,
 ) {
     /** The connect button is live only when a profile exists and nothing is running. */
     val canConnect: Boolean get() = hasProfile && tunnelState.canInitiateConnect()
@@ -117,7 +119,8 @@ class TunnelSessionManager(
             current.copy(hasProfile = hasProfile, tunnelState = next,
                 stats = current.stats.takeIf { next.isTunnelUp() },
                 startedAtElapsedMillis = current.startedAtElapsedMillis.takeIf { next.isTunnelUp() },
-                elapsedMillis = current.elapsedMillis.takeIf { next.isTunnelUp() })
+                elapsedMillis = current.elapsedMillis.takeIf { next.isTunnelUp() },
+                counterSample = null, trafficRate = null)
         }
     }
 
@@ -174,7 +177,7 @@ class TunnelSessionManager(
         refreshElapsedTime()
         val generation = statisticsGeneration.get()
         if (!_state.value.tunnelState.isTunnelUp()) {
-            _state.update { it.copy(stats = null) }
+            _state.update { it.copy(stats = null, counterSample = null, trafficRate = null) }
             return
         }
         // Read outside StateFlow.update: update lambdas may be evaluated more than
@@ -183,9 +186,14 @@ class TunnelSessionManager(
         catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
         catch (_: Exception) { null }
         val valid = measured?.takeIf { it.totalRx >= 0 && it.totalTx >= 0 }
+        val sampledAt = elapsedRealtimeMillis()
+        val sample = valid?.let {
+            com.kx.vpn.domain.tunnel.TrafficCounterSample(it.totalRx, it.totalTx, sampledAt)
+        }
         _state.update { current ->
             if (generation == statisticsGeneration.get() && current.tunnelState.isTunnelUp()) {
-                current.copy(stats = valid)
+                current.copy(stats = valid, counterSample = sample,
+                    trafficRate = sample?.let { com.kx.vpn.domain.tunnel.deriveTrafficRate(current.counterSample, it) })
             } else current // Never attach old tunnel counters to a newer session.
         }
     }
@@ -210,6 +218,8 @@ class TunnelSessionManager(
             val remainsUp = transition.state.isTunnelUp() && current.isTunnelUp
             current.copy(
                 tunnelState = transition.state,
+                counterSample = current.counterSample.takeIf { remainsUp },
+                trafficRate = current.trafficRate.takeIf { remainsUp },
                 startedAtElapsedMillis = when {
                     !transition.state.isTunnelUp() -> null
                     remainsUp -> current.startedAtElapsedMillis
@@ -259,7 +269,7 @@ class TunnelSessionManager(
             is TunnelEffect.AnnounceFailure -> Unit // the reason is already in state
 
             TunnelEffect.ClearSession -> {
-                _state.update { it.copy(stats = null) }
+                _state.update { it.copy(stats = null, counterSample = null, trafficRate = null) }
             }
         }
     }
