@@ -7,13 +7,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithText
+import com.kx.vpn.R
 import com.kx.vpn.data.SecuritySettings
+import com.kx.vpn.domain.security.SecurityEnforcement
 import com.kx.vpn.ui.security.SecurityCenterScreen
 import com.kx.vpn.ui.theme.KXMotionSpec
 import com.kx.vpn.ui.theme.KXTheme
 import com.kx.vpn.ui.theme.LocalKXGlass
 import com.kx.vpn.ui.theme.LocalKXMotion
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -112,12 +119,17 @@ class SecurityRenderTest {
     }
 
     /**
-     * The switches off. If a control changes nothing when moved, this frame and the one
-     * above should be identical apart from the switches themselves — which is what makes
-     * the gap visible.
+     * The switches off, at a viewport tall enough to show all six rows.
+     *
+     * This frame was first captured at 891dp and came out **byte-identical** to the
+     * switches-on frame: the only control whose stored value changes anything you can see
+     * is Always-On VPN, and at that height it sits below the fold, so the scroll view drew
+     * the same five rows twice. A duplicate image is not evidence, so the viewport is
+     * taller here and the real difference is asserted in the semantics tree below instead
+     * of being inferred from pixels.
      */
     @Test
-    @Config(qualifiers = "en-rUS-w411dp-h891dp-xxhdpi")
+    @Config(qualifiers = "en-rUS-w411dp-h1200dp-xxhdpi")
     fun securityCenterNightAllSwitchesOff() {
         render(dark = true) {
             screen(
@@ -132,6 +144,55 @@ class SecurityRenderTest {
                 ),
             )
         }
-        capture("53-security-night-411-en-switches-off")
+        capture("53-security-night-411-tall-en-switches-off")
+    }
+
+    /**
+     * The three controls the build does not honour are reported as not enforced whatever
+     * their stored value says.
+     *
+     * Asserted by matching the whole spoken description, because the first version of this
+     * test looked up the node by its visible title and read the content description off
+     * it — and found nothing. `onNodeWithText` matches the inner `Text`, while the
+     * description lives on the card that merges its children. Matching the string the
+     * screen actually announces tests the thing that matters and cannot be satisfied by an
+     * empty node.
+     */
+    @Test
+    @Config(qualifiers = "en-rUS-w411dp-h1200dp-xxhdpi")
+    fun notEnforcedControlsNeverLookEnforced() {
+        val badge = compose.activity.getString(R.string.security_badge_not_enforced)
+        fun text(res: Int, vararg args: Any) =
+            if (args.isEmpty()) compose.activity.getString(res)
+            else compose.activity.getString(res, *args)
+
+        render(dark = true) { screen(tunnelUp = true, settings = SecuritySettings()) }
+
+        listOf(
+            Triple(R.string.security_kill_switch_title, R.string.security_kill_switch_desc,
+                R.string.security_note_kill_switch),
+            Triple(R.string.security_ipv6_title, R.string.security_ipv6_desc,
+                R.string.security_note_ipv6),
+            Triple(R.string.security_auto_reconnect_title, R.string.security_auto_reconnect_desc,
+                R.string.security_note_auto_reconnect),
+        ).forEach { (titleRes, descRes, noteRes) ->
+            val title = text(titleRes)
+            val expected = "$title. $badge. ${text(descRes)}. ${text(noteRes)}"
+            val matched = compose.onAllNodes(hasContentDescription(expected)).fetchSemanticsNodes()
+            assertTrue(
+                "\"$title\" must announce \"$expected\"",
+                matched.isNotEmpty(),
+            )
+        }
+
+        // The two controls that do reach the tunnel name the resolver they substitute.
+        compose.onNodeWithText(
+            text(R.string.security_note_dns_leak, SecurityEnforcement.DNS_LEAK_RESOLVERS),
+            substring = true,
+        ).assertIsDisplayed()
+        compose.onNodeWithText(
+            text(R.string.security_note_tracker, SecurityEnforcement.TRACKER_RESOLVERS),
+            substring = true,
+        ).assertIsDisplayed()
     }
 }
