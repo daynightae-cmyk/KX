@@ -87,7 +87,21 @@ jobs:
           java-version: '21'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        # android-actions/setup-android@v3 is not used here: it tries to install the
+        # long-obsolete `tools` package, which no longer exists, and dies with
+        # "Failed to find package 'tools'". GitHub's ubuntu runner already ships a
+        # usable SDK and exports ANDROID_HOME, so we verify it and add only the
+        # components this build needs.
+        run: |
+          set -euo pipefail
+          : "${ANDROID_HOME:?ANDROID_HOME is not set on this runner}"
+          echo "SDK root: $ANDROID_HOME"
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          [[ -x "$SDKM" ]] || SDKM="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -1)"
+          yes | "$SDKM" --licenses >/dev/null 2>&1 || true
+          "$SDKM" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0" "build-tools;35.0.0" >/dev/null
+          echo "platforms:";    ls "$ANDROID_HOME/platforms"
+          echo "build-tools:";  ls "$ANDROID_HOME/build-tools"
 
       - name: Gradle cache
         uses: gradle/actions/setup-gradle@v4
