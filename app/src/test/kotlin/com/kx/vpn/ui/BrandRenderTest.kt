@@ -177,7 +177,7 @@ class BrandRenderTest {
             PlaceholderScreen(
                 title = stringResource(R.string.home_title),
                 body = stringResource(R.string.home_body),
-                actionLabel = stringResource(R.string.home_action),
+                actionLabel = stringResource(R.string.home_connect),
                 actionDisabledReason = stringResource(R.string.home_action_unavailable),
                 storageDegraded = false,
             )
@@ -192,7 +192,7 @@ class BrandRenderTest {
             PlaceholderScreen(
                 title = stringResource(R.string.home_title),
                 body = stringResource(R.string.home_body),
-                actionLabel = stringResource(R.string.home_action),
+                actionLabel = stringResource(R.string.home_connect),
                 actionDisabledReason = stringResource(R.string.home_action_unavailable),
                 storageDegraded = false,
             )
@@ -223,7 +223,7 @@ class BrandRenderTest {
                     PlaceholderScreen(
                         title = stringResource(R.string.home_title),
                         body = stringResource(R.string.home_body),
-                        actionLabel = stringResource(R.string.home_action),
+                        actionLabel = stringResource(R.string.home_connect),
                         actionDisabledReason = stringResource(R.string.home_action_unavailable),
                         storageDegraded = true,
                     )

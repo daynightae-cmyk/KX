@@ -9,10 +9,6 @@
     <string name="launch_storage_degraded">تعذّرت قراءة الإعدادات المحفوظة، لذلك تُعرض خطوة الإعداد من جديد. لم يتم تغيير إعدادات جهازك.</string>
 
 
-    <string name="home_title">الرئيسية</string>
-    <string name="home_body">ستظهر أدوات التحكم بالاتصال هنا عند وجود محرك النفق. لا يوجد خادم ولا حركة مرور ولا حالة حماية في هذا الإصدار.</string>
-    <string name="home_action">اتصال</string>
-    <string name="home_action_unavailable">لا يوجد محرك VPN مثبَّت في هذا الإصدار، لذلك لا يمكن الاتصال.</string>
 
     <string name="placeholder_build_section">محتويات الإصدار</string>
     <string name="placeholder_build_detail">الهوية البصرية وبوابة الانطلاق ونظام السمات والتنقل فقط.</string>
@@ -58,6 +54,7 @@
     <string name="import_fact_routes_selective">محدد — %1$d مسار</string>
     <string name="import_fact_dns">خوادم الأسماء</string>
     <string name="import_fact_dns_system">افتراضي الجهاز</string>
+    <string name="import_save">حفظ الإعداد</string>
     <string name="import_apply">تطبيق الإعداد</string>
     <string name="import_apply_unavailable">لا يوجد محرك نفق في هذا الإصدار بعد، لذلك لا يمكن الاتصال بشيء.</string>
     <string name="import_privacy_note">لا يُحفَظ شيء ولا يُرفَع شيء. المفتاح الخاص لا يُعرض أبدًا.</string>
@@ -82,4 +79,56 @@
     <string name="config_issue_no_allowed_ips">أحد الأقران بلا AllowedIPs.</string>
     <string name="config_issue_invalid_keepalive">قيمة PersistentKeepalive خارج المدى.</string>
     <string name="config_issue_invalid_mtu">قيمة MTU خارج المدى.</string>
+
+    <!-- TASK_02 · خدمة النفق والشاشة الرئيسية -->
+    <string name="vpn_channel_name">حالة النفق</string>
+    <string name="vpn_channel_description">تظهر أثناء تشغيل جلسة نفق VPN.</string>
+    <string name="vpn_notification_title">نفق KX</string>
+    <string name="vpn_notification_text">جلسة نفق قيد التشغيل.</string>
+
+    <string name="home_title">KX VPN</string>
+    <string name="home_body">تظهر أدوات التحكم بالاتصال هنا عند وجود إعداد صالح محفوظ.</string>
+    <string name="home_action">اتصال</string>
+    <string name="home_connect">اتصال</string>
+    <string name="home_disconnect">قطع الاتصال</string>
+    <string name="home_status_unconfigured">لا يوجد نفق مُهيّأ</string>
+    <string name="home_status_disconnected">غير متصل</string>
+    <string name="home_status_preparing_permission">جارٍ التحضير</string>
+    <string name="home_status_awaiting_permission">بانتظار موافقتك</string>
+    <string name="home_status_connecting">جارٍ الاتصال</string>
+    <string name="home_status_connected">متصل</string>
+    <string name="home_status_disconnecting">جارٍ قطع الاتصال</string>
+    <string name="home_status_failed">فشل الاتصال</string>
+    <string name="home_status_reconnecting">جارٍ إعادة الاتصال</string>
+    <string name="home_status_revoked">أُلغيت الصلاحية</string>
+
+    <string name="home_failure_permission_denied">رُفض إذن VPN. لا شيء يُوجَّه.</string>
+    <string name="home_failure_backend_unavailable">تعذّر تحميل محرك النفق على هذا الجهاز.</string>
+    <string name="home_failure_invalid_configuration">الإعداد المحفوظ غير قابل للاستخدام.</string>
+    <string name="home_failure_tunnel_start">تعذّر بدء النفق.</string>
+    <string name="home_failure_network_lost">تغيّرت الشبكة وتعذّر إعادة إنشاء النفق.</string>
+    <string name="home_failure_revoked">ألغى أندرويد إذن VPN. انتهت الجلسة.</string>
+    <string name="home_failure_already_in_use">هناك VPN آخر نشط على هذا الجهاز.</string>
+
+    <string name="home_section_choice">اختيار ذكي</string>
+    <string name="home_no_location_chosen">لم يُختَر موقع</string>
+    <string name="home_location_pending">تصل المواقع مع قائمة الخوادم.</string>
+
+    <string name="home_metric_ping">زمن الاستجابة</string>
+    <string name="home_metric_download">تنزيل</string>
+    <string name="home_metric_upload">رفع</string>
+    <string name="home_metric_ip_masking">إخفاء العنوان</string>
+    <string name="home_metric_unknown">--</string>
+    <string name="home_metric_unavailable">غير مقيس</string>
+    <string name="home_metric_ping_unit">مللي ثانية</string>
+    <string name="home_metric_traffic_unit">مُنقول</string>
+    <string name="home_metric_ip_masking_note">يخفي VPN عنوانك عن المواقع التي تزورها، لا عن سجلات مشغّل الموقع.</string>
+
+    <string name="home_action_unavailable">لا يوجد إعداد صالح محفوظ، فلا شيء يمكن الاتصال به.</string>
+    <string name="home_tab_home">الرئيسية</string>
+    <string name="home_tab_servers">الخوادم</string>
+    <string name="home_tab_security">الأمان</string>
+    <string name="home_tab_stats">الإحصاءات</string>
+    <string name="home_tab_settings">الإعدادات</string>
+    <string name="home_tab_coming_soon">هذا القسم لم يُبنَ بعد. لا شيء هنا نشط.</string>
 </resources>

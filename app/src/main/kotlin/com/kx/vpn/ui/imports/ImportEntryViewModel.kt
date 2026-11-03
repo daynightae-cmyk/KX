@@ -25,6 +25,11 @@ sealed interface ImportUiState {
     data class Inspected(
         val summary: TunnelSummary,
         val warnings: List<ConfigIssue>,
+        /**
+         * The parsed configuration text. It is held in memory only and is never
+         * logged; it is passed straight to the encrypted vault when the user saves.
+         */
+        val configText: String,
     ) : ImportUiState
 
     data class Rejected(val issues: List<ConfigIssue>) : ImportUiState
@@ -61,6 +66,7 @@ class ImportEntryViewModel : ViewModel() {
                     is ConfigValidation.Valid -> ImportUiState.Inspected(
                         summary = validation.summary,
                         warnings = validation.warnings,
+                        configText = String(outcome.bytes, Charsets.UTF_8),
                     )
 
                     is ConfigValidation.Invalid -> ImportUiState.Rejected(validation.errors)

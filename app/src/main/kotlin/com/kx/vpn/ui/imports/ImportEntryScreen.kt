@@ -55,6 +55,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun ImportEntryScreen(
     viewModel: ImportEntryViewModel,
+    onSaveProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -147,7 +148,11 @@ fun ImportEntryScreen(
                     tone = KXPalette.NodeOrchid,
                 )
 
-                is ImportUiState.Inspected -> InspectedCard(summary = current.summary)
+                is ImportUiState.Inspected -> InspectedCard(
+                    summary = current.summary,
+                    configText = current.configText,
+                    onSave = onSaveProfile,
+                )
             }
 
             Spacer(modifier = Modifier.height(KXDimens.SpaceLg))
@@ -214,7 +219,11 @@ private fun IssueCard(
  * beyond a boolean.
  */
 @Composable
-private fun InspectedCard(summary: com.kx.vpn.domain.config.TunnelSummary) {
+private fun InspectedCard(
+    summary: com.kx.vpn.domain.config.TunnelSummary,
+    configText: String,
+    onSave: (String) -> Unit,
+) {
     val glass = LocalKXGlass.current
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(KXDimens.SpaceSm)) {
@@ -258,13 +267,13 @@ private fun InspectedCard(summary: com.kx.vpn.domain.config.TunnelSummary) {
                 },
             )
 
-            // The apply control is present but honest: no engine, no connection.
+            // Saving is a real action: the configuration goes into the encrypted
+            // profile vault, and the home screen can then connect with it. Connecting
+            // itself happens from home, not from here.
             KXPillButton(
-                label = stringResource(R.string.import_apply),
-                onClick = { /* intentionally inert — the control is disabled */ },
-                enabled = false,
+                label = stringResource(R.string.import_save),
+                onClick = { onSave(configText) },
                 emphasized = false,
-                disabledReason = stringResource(R.string.import_apply_unavailable),
                 modifier = Modifier.padding(top = KXDimens.SpaceSm),
             )
         }

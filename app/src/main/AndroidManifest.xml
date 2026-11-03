@@ -3,13 +3,24 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-        TASK_00 requests no permissions at all.
+        TASK_00 declared zero permissions. TASK_02 is where the app actually needs
+        some, and each one is justified:
 
-        INTERNET, FOREGROUND_SERVICE and the VpnService intent filter are introduced
-        with the tunnel slice (TASK_02), not before it. Declaring them now would be a
-        privilege the app does not use, which docs/SECURITY_MODEL.md forbids under
-        "least privileges".
+        INTERNET              - the tunnel itself carries traffic.
+        ACCESS_NETWORK_STATE  - to observe Wi-Fi/mobile changes and to know when the
+                                underlying network dropped, so a lost connection can be
+                                reported as RECONNECTING instead of staying CONNECTED.
+        FOREGROUND_SERVICE    - a VPN tunnel must keep running while the app is in the
+                                background, which is the whole point of the service.
+        POST_NOTIFICATIONS    - the ongoing tunnel notification. Requested at connect
+                                time, never during onboarding.
     -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Required alongside foregroundServiceType="specialUse" on the tunnel service. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".KXApplication"
@@ -34,5 +45,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+            The VPN service. android:permission="android.permission.BIND_VPN_SERVICE"
+            means only the system can bind or start it, which is what makes the service
+            unforgeable by another app.
+
+            foregroundServiceType="specialUse" is required from Android 14 for any
+            service that calls startForeground() and has no more specific type; a VPN
+            tunnel is not dataSync, media or location work, so specialUse with an
+            explicit subtype is the honest declaration. The subtype value is what a
+            store submission would have to justify — see docs/BLOCKERS.md.
+        -->
+        <service
+            android:name=".platform.KXVpnService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:permission="android.permission.BIND_VPN_SERVICE">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="vpn_tunnel" />
+        </service>
     </application>
 </manifest>

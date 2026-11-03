@@ -157,7 +157,7 @@ class LaunchInstrumentedTest {
         awaitDestination()
         if (!hasNodes(text(R.string.home_title))) return // First run: Home is not on screen.
 
-        composeRule.onNodeWithText(text(R.string.home_action)).assertIsNotEnabled()
+        composeRule.onNodeWithText(text(R.string.home_connect)).assertIsNotEnabled()
     }
 
     /**
