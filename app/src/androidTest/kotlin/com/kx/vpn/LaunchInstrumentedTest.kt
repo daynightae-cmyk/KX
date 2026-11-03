@@ -39,6 +39,7 @@ class LaunchInstrumentedTest {
         composeRule
             .onNodeWithContentDescription(KXOrbTags.EmblemContentDescription)
             .assertIsDisplayed()
+        captureLaunch("brand-destination")
     }
 
     /**
@@ -120,6 +121,22 @@ class LaunchInstrumentedTest {
         composeRule
             .onNodeWithContentDescription(KXOrbTags.EmblemContentDescription)
             .assertIsDisplayed()
+    }
+
+    private fun captureLaunch(name: String) {
+        composeRule.waitForIdle()
+        val directory = requireNotNull(context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES))
+        check(directory.isDirectory || directory.mkdirs())
+        val config = context.resources.configuration
+        val variant = "${config.locales[0]}-${config.uiMode}-${config.screenWidthDp}-${config.fontScale}"
+        val screenshot = requireNotNull(InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())
+        try {
+            java.io.File(directory, "$name-$variant.png").outputStream().use {
+                check(screenshot.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+            }
+        } finally {
+            screenshot.recycle()
+        }
     }
 
     private fun launchSnapshot() = kotlinx.coroutines.runBlocking {
