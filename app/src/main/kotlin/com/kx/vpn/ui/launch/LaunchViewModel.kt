@@ -4,11 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kx.vpn.data.LaunchStateRepository
 import com.kx.vpn.domain.LaunchDestination
-import com.kx.vpn.domain.LaunchSnapshot
+import com.kx.vpn.domain.readLaunchSnapshot
 import com.kx.vpn.domain.decideLaunchDestination
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -29,13 +29,17 @@ class LaunchViewModel(
     repository: LaunchStateRepository,
 ) : ViewModel() {
 
-    val state: StateFlow<LaunchUiState> = repository.snapshot
-        .map<LaunchSnapshot, LaunchUiState> { snapshot ->
+    val state: StateFlow<LaunchUiState> = flow<LaunchUiState> {
+        // Bounding only MainActivity's system splash still leaves the Compose
+        // preparing screen waiting forever if the store never emits.
+        val snapshot = readLaunchSnapshot(repository.snapshot)
+        emit(
             LaunchUiState.Resolved(
                 destination = decideLaunchDestination(snapshot),
                 storageDegraded = snapshot.storageDegraded,
-            )
-        }
+            ),
+        )
+    }
         .stateIn(
             scope = viewModelScope,
             // Eagerly, not WhileSubscribed: the platform splash reads this state

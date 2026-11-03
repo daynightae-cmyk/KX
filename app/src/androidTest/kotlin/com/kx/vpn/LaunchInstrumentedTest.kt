@@ -11,6 +11,7 @@ import androidx.compose.ui.test.printToLog
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kx.vpn.ui.brand.KXOrbTags
+import kotlinx.coroutines.flow.first
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,10 +35,11 @@ class LaunchInstrumentedTest {
 
     @Test
     fun brandEmblemIsPresentAndAnnounced() {
-        composeRule.waitForIdle()
+        awaitDestination()
         composeRule
             .onNodeWithContentDescription(KXOrbTags.EmblemContentDescription)
             .assertIsDisplayed()
+        captureLaunch("brand-destination")
     }
 
     /**
@@ -46,7 +48,7 @@ class LaunchInstrumentedTest {
      */
     @Test
     fun launchLandsOnARealDestination() {
-        composeRule.waitForIdle()
+        awaitDestination()
         val welcome = context.getString(R.string.welcome_title)
         val home = context.getString(R.string.home_title)
 
@@ -69,7 +71,7 @@ class LaunchInstrumentedTest {
      */
     @Test
     fun noProtectionClaimIsEverRendered() {
-        composeRule.waitForIdle()
+        awaitDestination()
         listOf("Connected", "Fully Protected", "Protected", "Premium", "Unlimited")
             .forEach { forbidden ->
                 val failure = runCatching {
@@ -86,7 +88,7 @@ class LaunchInstrumentedTest {
 
     @Test
     fun unavailableConnectionActionIsDisabledNotFake() {
-        composeRule.waitForIdle()
+        awaitDestination()
         val home = context.getString(R.string.home_title)
         val connect = context.getString(R.string.home_action)
 
@@ -96,8 +98,8 @@ class LaunchInstrumentedTest {
     }
 
     @Test
-    fun availablePrimaryActionIsTappable() {
-        composeRule.waitForIdle()
+    fun welcomeSetupActionIsDisabledNotFake() {
+        awaitDestination()
         val welcome = context.getString(R.string.welcome_title)
         val setup = context.getString(R.string.welcome_action)
 
@@ -109,15 +111,47 @@ class LaunchInstrumentedTest {
     }
 
     @Test
-    fun relaunchAfterProcessDeathReturnsAValidDestination() {
+    fun activityRecreationReturnsAValidDestinationWithoutAcceptingSetup() {
+        awaitDestination()
+        val before = launchSnapshot()
+        composeRule.activityRule.scenario.recreate()
+        awaitDestination()
+        val after = launchSnapshot()
+        org.junit.Assert.assertEquals(before, after)
+        composeRule
+            .onNodeWithContentDescription(KXOrbTags.EmblemContentDescription)
+            .assertIsDisplayed()
+    }
+
+    private fun captureLaunch(name: String) {
         composeRule.waitForIdle()
-        composeRule.activity.finish()
-        val scenario = androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java)
-        scenario.use {
-            composeRule.waitForIdle()
-            composeRule
-                .onNodeWithContentDescription(KXOrbTags.EmblemContentDescription)
-                .assertIsDisplayed()
+        val directory = requireNotNull(context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES))
+        check(directory.isDirectory || directory.mkdirs())
+        val config = context.resources.configuration
+        val variant = "${config.locales[0]}-${config.uiMode}-${config.screenWidthDp}-${config.fontScale}"
+        val screenshot = requireNotNull(InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())
+        try {
+            java.io.File(directory, "$name-$variant.png").outputStream().use {
+                check(screenshot.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+            }
+        } finally {
+            screenshot.recycle()
+        }
+    }
+
+    private fun launchSnapshot() = kotlinx.coroutines.runBlocking {
+        kotlinx.coroutines.withTimeout(5_000) {
+            com.kx.vpn.data.createLaunchStateRepository(context).snapshot.first()
+        }
+    }
+
+    private fun awaitDestination() {
+        val welcome = context.getString(R.string.welcome_title)
+        val home = context.getString(R.string.home_title)
+        // Compose idleness alone does not wait for asynchronous DataStore IO.
+        composeRule.waitUntil(timeoutMillis = 8_000) {
+            composeRule.onAllNodesWithText(welcome).fetchSemanticsNodes().isNotEmpty() ||
+                composeRule.onAllNodesWithText(home).fetchSemanticsNodes().isNotEmpty()
         }
     }
 }

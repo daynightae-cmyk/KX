@@ -17,8 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.io.File
-import java.io.IOException
-import java.util.concurrent.atomic.AtomicLong
+import java.nio.file.Files
 
 /**
  * Persistence behaviour of the launch gate, exercised against a real DataStore on a
@@ -28,28 +27,27 @@ import java.util.concurrent.atomic.AtomicLong
 @RunWith(RobolectricTestRunner::class)
 class PreferencesLaunchStateRepositoryTest {
 
-    private val ids = AtomicLong(0)
-    private val files = mutableListOf<File>()
+    private lateinit var testRoot: File
     private lateinit var scope: CoroutineScope
 
     @Before
     fun setUp() {
         scope = CoroutineScope(SupervisorJob())
+        testRoot = Files.createTempDirectory("kx-datastore-test-").toFile()
     }
 
     @After
     fun tearDown() {
         scope.cancel()
-        files.forEach { it.parentFile?.deleteRecursively() }
-        files.clear()
+        // Delete only the unique directory this test created, never its parent
+        // (which is the shared system temporary directory).
+        testRoot.deleteRecursively()
     }
 
     private fun newStore() = PreferenceDataStoreFactory.create(scope = scope, produceFile = { tempDir() })
 
     private fun tempDir(): File {
-        val dir = File(System.getProperty("java.io.tmpdir"), "kx-datastore-${ids.incrementAndGet()}")
-        dir.mkdirs()
-        files.add(dir)
+        val dir = Files.createTempDirectory(testRoot.toPath(), "store-").toFile()
         return File(dir, "kx_launch.preferences_pb")
     }
 
@@ -127,16 +125,29 @@ class PreferencesLaunchStateRepositoryTest {
         repository.completeOnboarding()
         repository.snapshot.first()
 
-        val raw = try {
-            file.readBytes().toString(Charsets.ISO_8859_1)
-        } catch (expected: IOException) {
-            ""
-        }
+        assertTrue("the persisted file must exist before inspection", file.isFile)
+        val bytes = file.readBytes() // A failed read must fail this security test.
+        assertTrue("the inspected store must not be empty", bytes.isNotEmpty())
+        val raw = bytes.toString(Charsets.ISO_8859_1)
         listOf("private_key", "preshared", "Bearer", "password", "wireguard").forEach { needle ->
             assertTrue(
                 "launch store must not contain '$needle'",
                 !raw.contains(needle, ignoreCase = true),
             )
+        }
+    }
+    @Test
+    fun cleanupPreservesUnrelatedTemporaryFiles() {
+        val unrelated = Files.createTempDirectory("kx-unrelated-sentinel-").toFile()
+        val sentinel = File(unrelated, "preserve.txt").apply { writeText("unrelated data") }
+        try {
+            tempDir().writeText("owned fixture")
+            tearDown()
+            assertTrue("fixture directory should be removed", !testRoot.exists())
+            assertEquals("unrelated data", sentinel.readText())
+        } finally {
+            // This directory was created by this test, not by another application.
+            unrelated.deleteRecursively()
         }
     }
 }

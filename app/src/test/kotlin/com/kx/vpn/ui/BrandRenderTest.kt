@@ -32,6 +32,7 @@ import com.kx.vpn.ui.theme.KXMotionSpec
 import com.kx.vpn.ui.theme.KXTheme
 import com.kx.vpn.ui.theme.LocalKXGlass
 import com.kx.vpn.ui.theme.LocalKXMotion
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -282,8 +283,8 @@ class BrandRenderTest {
     }
 
     /**
-     * The store has not answered, so the gate must stay on the launch screen. If this
-     * ever navigates, the "no assumed state" rule is broken.
+     * A genuinely silent store stays loading before the bounded read deadline.
+     * An empty (completed) flow is not silent and must instead degrade immediately.
      */
     @Test
     @Config(qualifiers = "en-rUS-w360dp-h640dp-xhdpi")
@@ -298,11 +299,31 @@ class BrandRenderTest {
         capture("09-launch-night-360-en-loading")
     }
 
+    @Test
+    @Config(qualifiers = "en-rUS-w360dp-h640dp-xhdpi")
+    fun emptyStoreNavigatesToExplicitlyDegradedWelcome() {
+        val viewModel = LaunchViewModel(object : LaunchStateRepository {
+            override val snapshot: Flow<LaunchSnapshot> = emptyFlow()
+            override suspend fun completeOnboarding() = error("Startup must not accept setup")
+        })
+        var resolved: Pair<com.kx.vpn.domain.LaunchDestination, Boolean>? = null
+        render(dark = true) {
+            LaunchScreen(viewModel = viewModel, onNavigate = { destination, degraded ->
+                resolved = destination to degraded
+            })
+        }
+        compose.waitUntil(timeoutMillis = 5_000) { resolved != null }
+        org.junit.Assert.assertEquals(
+            com.kx.vpn.domain.LaunchDestination.Welcome to true,
+            resolved,
+        )
+    }
+
     private class FakeLaunchRepository(
         private val flow: MutableStateFlow<LaunchSnapshot>?,
     ) : LaunchStateRepository {
         override val snapshot: Flow<LaunchSnapshot>
-            get() = flow ?: emptyFlow()
+            get() = flow ?: kotlinx.coroutines.flow.flow { awaitCancellation() }
 
         override suspend fun completeOnboarding() {
             flow?.let { it.emit(it.value.copy(onboardingCompleted = true)) }
