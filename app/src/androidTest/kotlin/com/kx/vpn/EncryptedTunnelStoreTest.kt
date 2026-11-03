@@ -12,6 +12,13 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class EncryptedTunnelStoreTest {
+    @Test fun maintainedWireGuardNativeLibraryLoadsWithoutStartingATunnel() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val backend = com.wireguard.android.backend.GoBackend(context)
+        assertTrue(backend.version.isNotBlank())
+        assertTrue(backend.runningTunnelNames.isEmpty())
+    }
+
     @Test fun androidKeystoreRoundTripAndTamperRejection() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val file = File(context.noBackupFilesDir, "owned-tunnel.enc")

@@ -8,7 +8,7 @@ orb/background/cards. Visual fidelity/complete reference layout is NOT VERIFIED.
 
 ## Actual code
 
-- WireGuard Android tunnel artifact pinned at `1.0.20230706`; exact tag source was
+- WireGuard Android tunnel artifact pinned at `1.0.20260102`; exact tag source was
   downloaded from upstream GitHub and inspected for Backend/Tunnel/Config signatures,
   lifecycle and callback behavior. Apache-2.0 upstream notices/licenses apply.
   This is an integration candidate, **not an independent security audit**. Native
@@ -37,7 +37,7 @@ orb/background/cards. Visual fidelity/complete reference layout is NOT VERIFIED.
 ## Actual local checks
 
 Same session controller production/test source compiled with standalone Kotlin
-2.1.20/JDK17 and compiler-bundled coroutines 1.8.0, JUnit4.13.2: **11 tests passed**.
+2.1.20/JDK17 and compiler-bundled coroutines 1.8.0, JUnit4.13.2: **12 tests passed**.
 This is a focused state-machine check, **not** the app-pinned Kotlin2.3.21 /
 coroutines1.11.0 Android Gradle suite. Resource XML/catalog TOML parsed, diff checks
 passed. Exact-SHA GitHub automatic CI must determine Android build/Lint/device state.
@@ -59,3 +59,17 @@ Added a real-device AndroidKeystore round-trip/tamper test; not yet run at writi
   depend on its essential traffic acceptance and therefore are NOT_STARTED here;
   no five-task completion claim. Do not bypass tests or alter the serial contract
   to inflate task counts. All prior branches and other agents' work preserved.
+
+## Candidate corrections before verification
+
+- Review identified service destruction clearing a prior failure via disconnect.
+  Cleanup now still invokes backend teardown but preserves the failure indication;
+  a new regression brings the standalone suite to **12 passing tests**.
+- First inspected the historical 20230706 tag, then found the published maintained
+  release 20260102 in Maven Central and inspected that exact upstream tag too.
+  It builds at compileSdk36/minSdk24 (fits this app) and enables flexible native
+  page sizes. The dependency was updated before acceptance; actual packaged 16KB
+  device compatibility remains unverified. No audit/security-advisory clean claim.
+- Added device native-library loading/version check without connecting a tunnel,
+  plus real Home unconfigured-state/import-scroll/screenshot checks. These are not
+  consent/handshake/traffic proof and do not modify onboarding state.
