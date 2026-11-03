@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">كي إكس VPN</string>
+    <string name="brand_name">KNOUX</string>
+    <string name="brand_tagline">شبكتك الخاصة</string>
+    <string name="launch_loading">جارٍ فتح مساحتك…</string>
+    <string name="first_run_title">اتصالك الخاص يبدأ بك</string>
+    <string name="first_run_body">أساس تطبيق KX لأندرويد جاهز. الإعداد الإرشادي واتصال VPN غير متاحين في هذه النسخة التطويرية.</string>
+    <string name="returning_title">مرحبًا بعودتك</string>
+    <string name="returning_body">تم العثور على إعدادك المحفوظ. اتصال VPN غير متاح في هذه النسخة التطويرية.</string>
+    <string name="launch_error_title">تعذّرت قراءة الإعداد المحلي</string>
+    <string name="launch_error_body">تعذّر فتح تفضيلاتك. لم تُحذف أي بيانات. حاول مرة أخرى للمتابعة.</string>
+    <string name="retry">حاول مرة أخرى</string>
+    <string name="build_status">نسخة تطويرية · VPN غير متصل</string>
+    <string name="foundation_details">حول هذه النسخة</string>
+    <string name="foundation_title">بناء صادق منذ البداية</string>
+    <string name="foundation_body">تحتوي هذه النسخة على تجربة التشغيل الأصلية وتوجيه البدء المحلي فقط. لا تنشئ نفق VPN ولا ترسل حركة بيانات ولا تتطلب حسابًا أو أذونات الجهاز. لم تتم الموافقة على الإعداد الأولي بعد.</string>
+    <string name="back">رجوع</string>
+</resources>

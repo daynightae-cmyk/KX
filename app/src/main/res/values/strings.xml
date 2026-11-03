@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">KX VPN</string>
+    <string name="brand_name">KNOUX</string>
+    <string name="brand_tagline">PRIVATE NETWORK</string>
+    <string name="launch_loading">Opening your workspace…</string>
+    <string name="first_run_title">A private connection starts with you</string>
+    <string name="first_run_body">The KX Android foundation is ready. Guided setup and VPN connections are not available in this development build.</string>
+    <string name="returning_title">Welcome back</string>
+    <string name="returning_body">Your saved setup was found. VPN connections are not available in this development build.</string>
+    <string name="launch_error_title">Could not read local setup</string>
+    <string name="launch_error_body">Your preferences could not be opened. Nothing has been reset. Try again to continue.</string>
+    <string name="retry">Try again</string>
+    <string name="build_status">Development build · VPN not connected</string>
+    <string name="foundation_details">About this build</string>
+    <string name="foundation_title">Built honestly, from the beginning</string>
+    <string name="foundation_body">This release contains the native launch experience and local startup routing only. It does not create a VPN tunnel, send traffic, require an account or request device permissions. Onboarding has not been accepted.</string>
+    <string name="back">Back</string>
+</resources>

@@ -1,0 +1,28 @@
+Local startup-domain smoke test (not the Android Gradle suite):
+Kotlin compiler: 2.1.20
+JVM: Eclipse Temurin 17.0.13+11
+JUnit: 4.13.2
+Coroutines: Kotlin compiler-bundled 1.8.0 (app pins 1.10.2; Android suite remains unverified)
+
+JUnit version 4.13.2
+.........
+Time: 0.091
+
+OK (9 tests)
+
+Gradle wrapper: ./gradlew --version, exit 0
+Gradle 8.13
+Revision: 073314332697ba45c16c0a0ce1891fa6794179ff
+
+Android Gradle check attempt: configuration failed, exit 1
+Plugin [id: 'org.jetbrains.kotlin.android', version: '2.1.20', apply: false] was not found.
+Could not resolve plugin artifact 'org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:2.1.20'.
+Repositories searched: Google, MavenRepo, Gradle Central Plugin Repository.
+BUILD FAILED in 21s
+
+Independent endpoint probes:
+repo.maven.apache.org: curl (6) Could not resolve host
+repo1.maven.org: curl (6) Could not resolve host
+plugins.gradle.org: curl (6) Could not resolve host
+Google SDK and dl.google.com Android Maven: reachable
+/dev/kvm: No such file or directory
