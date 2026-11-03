@@ -1,6 +1,9 @@
 package com.kx.vpn.data.vault
 
 import java.io.File
+import java.io.IOException
+import java.io.InputStream
+import java.io.ByteArrayOutputStream
 
 /**
  * Stores encrypted profile blobs in the app's private directory.
@@ -12,9 +15,11 @@ import java.io.File
  */
 class FileProfileBlobStore(
     private val directory: File,
+    private val maxBlobBytes: Int = DEFAULT_MAX_BLOB_BYTES,
 ) : ProfileBlobStore {
 
     init {
+        require(maxBlobBytes in 1..MAX_SUPPORTED_BLOB_BYTES) { "Invalid encrypted profile size limit" }
         if (!directory.isDirectory && !directory.mkdirs()) {
             throw IllegalStateException("could not create the profile directory")
         }
@@ -22,25 +27,29 @@ class FileProfileBlobStore(
 
     override fun write(id: String, bytes: ByteArray) {
         val target = fileFor(id)
-        // Write to a temporary file and rename, so a crash mid-write cannot leave a
-        // half-written blob that would later be reported as a corrupt profile.
-        val temp = File(directory, "$id.tmp")
-        temp.writeBytes(bytes)
-        if (!temp.renameTo(target)) {
-            target.writeBytes(bytes)
-            temp.delete()
-        }
+        require(bytes.size <= maxBlobBytes) { "Encrypted profile exceeds storage limit" }
+        writeProfileBlobAtomically(File(directory, "$id.tmp"), target, bytes)
     }
 
     override fun read(id: String): ByteArray? {
         val file = fileFor(id)
         if (!file.isFile) return null
-        return runCatching { file.readBytes() }.getOrNull()
+        return try {
+            // Length is only a fast rejection. Enforce the same ceiling during IO,
+            // because a file can grow after this check; never readBytes() first.
+            if (file.length() > maxBlobBytes) return null
+            file.inputStream().use { readBoundedProfileBlob(it, maxBlobBytes) }
+        } catch (_: IOException) {
+            null
+        } catch (_: SecurityException) {
+            null
+        }
     }
 
     override fun delete(id: String) {
-        fileFor(id).delete()
-        File(directory, "$id.tmp").delete()
+        val target = fileFor(id) // Validate before either mutation.
+        deleteOwnedFile(target)
+        deleteOwnedFile(File(directory, "$id.tmp"))
     }
 
     override fun list(): List<String> = runCatching {
@@ -51,12 +60,95 @@ class FileProfileBlobStore(
     }.getOrDefault(emptyList())
 
     override fun clearAll() {
-        runCatching { directory.listFiles()?.forEach { it.delete() } }
+        val files = directory.listFiles()
+            ?: throw java.io.IOException("Profile directory cannot be inspected")
+        files.filter { file ->
+            val id = when {
+                file.name.endsWith(EXTENSION) -> file.name.removeSuffix(EXTENSION)
+                file.name.endsWith(".tmp") -> file.name.removeSuffix(".tmp")
+                else -> return@filter false
+            }
+            ID_PATTERN.matches(id)
+        }.forEach(::deleteOwnedFile)
     }
 
-    private fun fileFor(id: String) = File(directory, "$id$EXTENSION")
-
-    private companion object {
-        const val EXTENSION = ".kxprofile"
+    private fun deleteOwnedFile(file: File) {
+        if (!file.exists()) return
+        if (!file.isFile || !file.delete() || file.exists()) {
+            throw java.io.IOException("Profile removal unconfirmed")
+        }
     }
+
+    private fun fileFor(id: String): File {
+        require(ID_PATTERN.matches(id)) { "Invalid profile id" }
+        return File(directory, "$id$EXTENSION")
+    }
+
+    companion object {
+        // Current KXV1 frame + 64KiB plaintext + Android AES-GCM nonce/tag.
+        // A future envelope change must explicitly revise this storage contract.
+        const val DEFAULT_MAX_BLOB_BYTES = 4 + 64 * 1024 + 12 + 16
+        private const val MAX_SUPPORTED_BLOB_BYTES = 1024 * 1024
+        private const val EXTENSION = ".kxprofile"
+        private val ID_PATTERN = Regex("^[A-Za-z0-9_-]{1,64}$")
+    }
+}
+
+/** Reads at most limit + 1 bytes; oversized input is rejected without mutation. */
+internal fun readBoundedProfileBlob(stream: InputStream, limit: Int): ByteArray? {
+    require(limit in 1..1024 * 1024) { "Invalid encrypted profile size limit" }
+    val output = ByteArrayOutputStream(minOf(limit, 8192))
+    val buffer = ByteArray(minOf(limit + 1, 8192))
+    var total = 0
+    while (true) {
+        val count = stream.read(buffer, 0, minOf(buffer.size, limit - total + 1))
+        if (count < 0) return output.toByteArray()
+        if (count == 0) {
+            // InputStream implementations should progress, but a zero-returning
+            // wrapper must not cause an infinite loop or an empty-success result.
+            val next = stream.read()
+            if (next < 0) return output.toByteArray()
+            if (++total > limit) return null
+            output.write(next)
+        } else {
+            total += count
+            if (total > limit) return null
+            output.write(buffer, 0, count)
+        }
+    }
+}
+
+/** No in-place fallback: a failed atomic publish leaves the previous blob untouched. */
+internal fun writeProfileBlobAtomically(
+    temp: File,
+    target: File,
+    bytes: ByteArray,
+    publish: (File, File) -> Unit = { source, destination ->
+        java.nio.file.Files.move(source.toPath(), destination.toPath(),
+            java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+            java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+    },
+) {
+    var failure: Throwable? = null
+    try {
+        java.io.FileOutputStream(temp).use { output ->
+            output.write(bytes)
+            output.fd.sync()
+        }
+        publish(temp, target)
+    } catch (error: Throwable) {
+        // Cleanup must not replace the actual publication error (including fatal
+        // errors). Retain it, then rethrow after best-effort temporary cleanup.
+        failure = error
+    }
+    try {
+        if (temp.isFile && !temp.delete() && temp.exists()) {
+            throw IOException("Temporary encrypted profile removal unconfirmed")
+        }
+    } catch (cleanupError: Throwable) {
+        val original = failure
+        if (original == null) failure = cleanupError
+        else original.addSuppressed(cleanupError)
+    }
+    failure?.let { throw it }
 }
