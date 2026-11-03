@@ -12,10 +12,6 @@
     <string name="launch_no_tunnel_notice">This build contains no VPN connection. Nothing is routed or protected yet.</string>
     <string name="launch_storage_degraded">Saved preferences could not be read, so setup is being shown again. Your device settings were not changed.</string>
 
-    <string name="welcome_title">Welcome</string>
-    <string name="welcome_body">First-run setup is not part of this build. No permission has been requested and no profile has been created.</string>
-    <string name="welcome_action">Start setup</string>
-    <string name="welcome_action_unavailable">Setup arrives with the onboarding slice and is intentionally unavailable here.</string>
 
     <string name="home_title">Home</string>
     <string name="home_body">Connection controls will appear here once the tunnel engine exists. There is no server, no traffic and no protection status in this build.</string>
@@ -24,4 +20,70 @@
 
     <string name="placeholder_build_section">Build contents</string>
     <string name="placeholder_build_detail">Brand identity, launch gate, theme system and navigation only.</string>
+
+    <!-- TASK_01 · welcome, disclosure and configuration entry -->
+    <string name="welcome_wordmark">KX</string>
+    <string name="welcome_wordmark_sub">Private VPN</string>
+    <string name="welcome_tagline">Bring your own configuration. No account and no bundled server fleet.</string>
+    <string name="welcome_get_started">Get Started</string>
+    <string name="welcome_import_config">Import Config</string>
+    <string name="welcome_honesty_notice">No VPN connection exists in this build. Nothing is routed or protected yet.</string>
+
+    <string name="onboarding_title">Before you start</string>
+    <string name="onboarding_subtitle">What this app does, and what it cannot do for you.</string>
+    <string name="onboarding_section_what">What a VPN does</string>
+    <string name="onboarding_body_what">A VPN forwards your traffic through a server you choose and encrypts it between this device and that server. It does not make you anonymous, and the sites you visit still see your requests.</string>
+    <string name="onboarding_section_limits">Privacy limits</string>
+    <string name="onboarding_body_limits">Whichever server you connect to can see the address you are connecting to and the volume of your traffic. This app makes no no-logs claim, because there is no operator here to make one. A VPN is not antivirus, and it does not hide you from the network owner entirely.</string>
+    <string name="onboarding_section_cost">Cost boundaries</string>
+    <string name="onboarding_body_cost">There is no bundled server fleet, no free unlimited exit and no subscription in this app. You supply a WireGuard configuration or run your own gateway. Nothing is purchased or enrolled by continuing.</string>
+    <string name="onboarding_acknowledge">I have read the above.</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_continue_locked">Tick the box above to continue.</string>
+    <string name="onboarding_write_failed">Your choice could not be saved on this device. Nothing was changed. Try again.</string>
+
+    <string name="import_title">Import configuration</string>
+    <string name="import_explainer">Pick a WireGuard .conf file to inspect. It stays on this device and is not uploaded.</string>
+    <string name="import_choose_file">Choose a file</string>
+    <string name="import_reading">Reading…</string>
+    <string name="import_unreadable">Could not read the file</string>
+    <string name="import_unreadable_denied">Access to that file was denied or the file disappeared. Nothing was changed.</string>
+    <string name="import_unreadable_empty">The selected file is empty.</string>
+    <string name="import_rejected">Not a valid WireGuard configuration</string>
+    <string name="import_accepted">Configuration parsed</string>
+    <string name="import_fact_private_key">Private key</string>
+    <string name="import_fact_present">Present (not shown)</string>
+    <string name="import_fact_absent">Missing</string>
+    <string name="import_fact_peers">Peers</string>
+    <string name="import_fact_endpoints">Endpoints</string>
+    <string name="import_fact_none">None</string>
+    <string name="import_fact_routes">Routing</string>
+    <string name="import_fact_routes_all">All traffic (0.0.0.0/0)</string>
+    <string name="import_fact_routes_selective">Selective — %1$d routes</string>
+    <string name="import_fact_dns">DNS</string>
+    <string name="import_fact_dns_system">Device default</string>
+    <string name="import_apply">Apply configuration</string>
+    <string name="import_apply_unavailable">There is no tunnel engine in this build yet, so nothing can be connected.</string>
+    <string name="import_privacy_note">Nothing is saved and nothing is uploaded. The private key is never displayed.</string>
+
+    <string name="config_issue_empty">The file is empty.</string>
+    <string name="config_issue_too_large">The file is larger than the 64 KB limit.</string>
+    <string name="config_issue_too_many_lines">The file has too many lines.</string>
+    <string name="config_issue_not_utf8">The file is not valid UTF-8 text.</string>
+    <string name="config_issue_control_characters">The file contains control characters.</string>
+    <string name="config_issue_missing_interface">No [Interface] section.</string>
+    <string name="config_issue_multiple_interface">More than one [Interface] section.</string>
+    <string name="config_issue_missing_peer">No [Peer] section.</string>
+    <string name="config_issue_unknown_section">Unrecognised section.</string>
+    <string name="config_issue_missing_key">A line is not a key = value pair.</string>
+    <string name="config_issue_invalid_key">A key is not a valid 32-byte base64 value.</string>
+    <string name="config_issue_invalid_port">Port is out of range.</string>
+    <string name="config_issue_invalid_address">Address is not a valid IP or CIDR.</string>
+    <string name="config_issue_invalid_cidr">AllowedIPs entry is not a valid CIDR.</string>
+    <string name="config_issue_invalid_dns">DNS entry is not a valid address or hostname.</string>
+    <string name="config_issue_invalid_endpoint">Endpoint is not a valid host and port.</string>
+    <string name="config_issue_duplicate_peer">Two peers share the same public key.</string>
+    <string name="config_issue_no_allowed_ips">A peer has no AllowedIPs.</string>
+    <string name="config_issue_invalid_keepalive">PersistentKeepalive is out of range.</string>
+    <string name="config_issue_invalid_mtu">MTU is out of range.</string>
 </resources>

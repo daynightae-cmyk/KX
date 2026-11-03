@@ -3,6 +3,8 @@ package com.kx.vpn.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -10,10 +12,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.kx.vpn.R
+import com.kx.vpn.data.LaunchStateRepository
 import com.kx.vpn.domain.LaunchDestination
+import com.kx.vpn.ui.imports.ImportEntryScreen
+import com.kx.vpn.ui.imports.ImportEntryViewModel
 import com.kx.vpn.ui.launch.LaunchScreen
 import com.kx.vpn.ui.launch.LaunchViewModel
+import com.kx.vpn.ui.onboarding.OnboardingScreen
+import com.kx.vpn.ui.onboarding.OnboardingViewModel
 import com.kx.vpn.ui.placeholder.PlaceholderScreen
+import com.kx.vpn.ui.welcome.WelcomeScreen
 
 /**
  * Root graph.
@@ -26,6 +34,7 @@ import com.kx.vpn.ui.placeholder.PlaceholderScreen
 fun KXNavHost(
     navController: NavHostController,
     launchViewModel: LaunchViewModel,
+    repository: LaunchStateRepository,
     modifier: Modifier = Modifier,
 ) {
     val degradedArg = navArgument(KXRoute.ArgStorageDegraded) {
@@ -58,18 +67,34 @@ fun KXNavHost(
             )
         }
 
-        composable(
-            route = "${KXRoute.Welcome}?{${KXRoute.ArgStorageDegraded}}",
-            arguments = listOf(degradedArg),
-        ) { entry ->
-            PlaceholderScreen(
-                title = stringResource(R.string.welcome_title),
-                body = stringResource(R.string.welcome_body),
-                actionLabel = stringResource(R.string.welcome_action),
-                actionDisabledReason = stringResource(R.string.welcome_action_unavailable),
-                storageDegraded =
-                    entry.arguments?.getBoolean(KXRoute.ArgStorageDegraded) ?: false,
+        composable(KXRoute.Welcome) {
+            WelcomeScreen(
+                onGetStarted = { navController.navigate(KXRoute.Onboarding) },
+                onImportConfig = { navController.navigate(KXRoute.Import) },
             )
+        }
+
+        composable(KXRoute.Onboarding) {
+            val onboardingViewModel: OnboardingViewModel = viewModel(
+                factory = OnboardingViewModelFactory(repository),
+            )
+            OnboardingScreen(
+                viewModel = onboardingViewModel,
+                onCompleted = {
+                    // Home is the destination after acceptance, and the onboarding and
+                    // welcome nodes are removed so back from Home returns the user to
+                    // the app root rather than into their own setup flow.
+                    navController.navigate(KXRoute.Home) {
+                        popUpTo(KXRoute.Welcome) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+
+        composable(KXRoute.Import) {
+            val importViewModel: ImportEntryViewModel = viewModel()
+            ImportEntryScreen(viewModel = importViewModel)
         }
 
         composable(
@@ -86,4 +111,14 @@ fun KXNavHost(
             )
         }
     }
+}
+
+internal class OnboardingViewModelFactory(
+    private val repository: LaunchStateRepository,
+) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
+        requireNotNull(OnboardingViewModel(repository) as? T) {
+            "Requested $modelClass from an Onboarding-only factory"
+        }
 }

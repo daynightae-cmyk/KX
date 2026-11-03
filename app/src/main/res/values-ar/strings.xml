@@ -8,10 +8,6 @@
     <string name="launch_no_tunnel_notice">لا يحتوي هذا الإصدار على أي اتصال VPN. لا شيء مُوجَّه أو محمي حتى الآن.</string>
     <string name="launch_storage_degraded">تعذّرت قراءة الإعدادات المحفوظة، لذلك تُعرض خطوة الإعداد من جديد. لم يتم تغيير إعدادات جهازك.</string>
 
-    <string name="welcome_title">مرحبًا</string>
-    <string name="welcome_body">الإعداد الأول ليس جزءًا من هذا الإصدار. لم يُطلب أي إذن ولم يُنشأ أي ملف تعريفي.</string>
-    <string name="welcome_action">بدء الإعداد</string>
-    <string name="welcome_action_unavailable">يأتي الإعداد مع مرحلة الترحيب، وهو غير متاح هنا بشكل مقصود.</string>
 
     <string name="home_title">الرئيسية</string>
     <string name="home_body">ستظهر أدوات التحكم بالاتصال هنا عند وجود محرك النفق. لا يوجد خادم ولا حركة مرور ولا حالة حماية في هذا الإصدار.</string>
@@ -20,4 +16,70 @@
 
     <string name="placeholder_build_section">محتويات الإصدار</string>
     <string name="placeholder_build_detail">الهوية البصرية وبوابة الانطلاق ونظام السمات والتنقل فقط.</string>
+
+    <!-- TASK_01 · الترحيب والإفصاح وإدخال الإعداد -->
+    <string name="welcome_wordmark">KX</string>
+    <string name="welcome_wordmark_sub">شبكة خاصة</string>
+    <string name="welcome_tagline">أحضر إعدادك الخاص. لا حساب ولا مجموعة خوادم مُضمّنة.</string>
+    <string name="welcome_get_started">ابدأ</string>
+    <string name="welcome_import_config">استيراد إعداد</string>
+    <string name="welcome_honesty_notice">لا يوجد اتصال VPN في هذا الإصدار. لا شيء مُوجَّه أو محمي بعد.</string>
+
+    <string name="onboarding_title">قبل أن تبدأ</string>
+    <string name="onboarding_subtitle">ما يفعله هذا التطبيق، وما لا يستطيع فعله من أجلك.</string>
+    <string name="onboarding_section_what">ما يفعله VPN</string>
+    <string name="onboarding_body_what">يعيد VPN توجيه حركة مرور جهازك عبر خادم تختاره أنت، ويشفّرها بين الجهاز وذلك الخادم فقط. لا يجعلك مجهول الهوية، والمواقع التي تزورها لا تزال ترى طلباتك.</string>
+    <string name="onboarding_section_limits">حدود الخصوصية</string>
+    <string name="onboarding_body_limits">أي خادم تتصل به يستطيع رؤية العنوان الذي تتصل به وحجم حركة مرورك. هذا التطبيق لا يدّعي عدم حفظ السجلات، لأنه لا يوجد مشغّل هنا يدّعي ذلك. VPN ليس برنامج مكافحة فيروسات، ولا يحجبك عن مالك الشبكة بالكامل.</string>
+    <string name="onboarding_section_cost">حدود التكلفة</string>
+    <string name="onboarding_body_cost">لا توجد مجموعة خوادم مُضمّنة، ولا منفذ مجاني غير محدود، ولا اشتراك في هذا التطبيق. أنت من يوفّر إعداد WireGuard أو يشغّل بوابته الخاصة. المتابعة لا تشترِي شيئًا ولا تُسجِّلك في أي خدمة.</string>
+    <string name="onboarding_acknowledge">لقد قرأت ما سبق.</string>
+    <string name="onboarding_continue">متابعة</string>
+    <string name="onboarding_continue_locked">فعّل المربع أعلاه للمتابعة.</string>
+    <string name="onboarding_write_failed">تعذّر حفظ اختيارك على هذا الجهاز. لم يتغيّر شيء. أعد المحاولة.</string>
+
+    <string name="import_title">استيراد الإعداد</string>
+    <string name="import_explainer">اختر ملف WireGuard بصيغة ‎.conf لفحصه. يبقى على هذا الجهاز ولا يُرفَع.</string>
+    <string name="import_choose_file">اختر ملفًا</string>
+    <string name="import_reading">جارٍ القراءة…</string>
+    <string name="import_unreadable">تعذّرت قراءة الملف</string>
+    <string name="import_unreadable_denied">الوصول إلى ذلك الملف مرفوض أو أن الملف اختفى. لم يتغيّر شيء.</string>
+    <string name="import_unreadable_empty">الملف المحدد فارغ.</string>
+    <string name="import_rejected">ليس إعداد WireGuard صالحًا</string>
+    <string name="import_accepted">تم تحليل الإعداد</string>
+    <string name="import_fact_private_key">المفتاح الخاص</string>
+    <string name="import_fact_present">موجود (غير معروض)</string>
+    <string name="import_fact_absent">غير موجود</string>
+    <string name="import_fact_peers">الأقران</string>
+    <string name="import_fact_endpoints">العناوين النهائية</string>
+    <string name="import_fact_none">لا شيء</string>
+    <string name="import_fact_routes">التوجيه</string>
+    <string name="import_fact_routes_all">كل الحركة (0.0.0.0/0)</string>
+    <string name="import_fact_routes_selective">محدد — %1$d مسار</string>
+    <string name="import_fact_dns">خوادم الأسماء</string>
+    <string name="import_fact_dns_system">افتراضي الجهاز</string>
+    <string name="import_apply">تطبيق الإعداد</string>
+    <string name="import_apply_unavailable">لا يوجد محرك نفق في هذا الإصدار بعد، لذلك لا يمكن الاتصال بشيء.</string>
+    <string name="import_privacy_note">لا يُحفَظ شيء ولا يُرفَع شيء. المفتاح الخاص لا يُعرض أبدًا.</string>
+
+    <string name="config_issue_empty">الملف فارغ.</string>
+    <string name="config_issue_too_large">حجم الملف يتجاوز حد 64 كيلوبايت.</string>
+    <string name="config_issue_too_many_lines">عدد أسطر الملف كبير جدًا.</string>
+    <string name="config_issue_not_utf8">الملف ليس نصًا صالحًا بترميز UTF-8.</string>
+    <string name="config_issue_control_characters">الملف يحتوي أحرف تحكم.</string>
+    <string name="config_issue_missing_interface">لا يوجد قسم ‎[Interface]‎.</string>
+    <string name="config_issue_multiple_interface">أكثر من قسم ‎[Interface]‎.</string>
+    <string name="config_issue_missing_peer">لا يوجد قسم ‎[Peer]‎.</string>
+    <string name="config_issue_unknown_section">قسم غير معروف.</string>
+    <string name="config_issue_missing_key">أحد الأسطر ليس بصيغة مفتاح = قيمة.</string>
+    <string name="config_issue_invalid_key">أحد المفاتيح ليس قيمة base64 صالحة بطول 32 بايت.</string>
+    <string name="config_issue_invalid_port">المنفذ خارج المدى المسموح.</string>
+    <string name="config_issue_invalid_address">العنوان ليس IP أو CIDR صالحًا.</string>
+    <string name="config_issue_invalid_cidr">قيمة AllowedIPs ليست CIDR صالحًا.</string>
+    <string name="config_issue_invalid_dns">خادم الأسماء ليس عنوانًا أو اسم مضيف صالحًا.</string>
+    <string name="config_issue_invalid_endpoint">العنوان النهائي ليس مضيفًا ومنفذًا صالحين.</string>
+    <string name="config_issue_duplicate_peer">قرنان يتشاركان نفس المفتاح العام.</string>
+    <string name="config_issue_no_allowed_ips">أحد الأقران بلا AllowedIPs.</string>
+    <string name="config_issue_invalid_keepalive">قيمة PersistentKeepalive خارج المدى.</string>
+    <string name="config_issue_invalid_mtu">قيمة MTU خارج المدى.</string>
 </resources>
