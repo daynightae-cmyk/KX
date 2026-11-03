@@ -110,6 +110,10 @@ jobs:
 
       - name: Verify toolchain
         run: |
+          # Belt and braces: the exec bit is set in the index via
+          # `git update-index --chmod=+x gradlew`, but a checkout on a filesystem that
+          # ignores modes would otherwise fail with "Permission denied".
+          chmod +x gradlew
           ./gradlew --version
           echo "ANDROID_HOME=$ANDROID_HOME"
 
