@@ -2,6 +2,7 @@ package com.kx.vpn
 
 import android.app.Application
 import android.content.Context
+import com.kx.vpn.data.ConnectedSessionTracker
 import com.kx.vpn.data.EndpointCatalogueRepository
 import com.kx.vpn.data.EndpointSwitchController
 import com.kx.vpn.data.LaunchStateRepository
@@ -89,6 +90,25 @@ class KXApplication : Application() {
             sessionManager = tunnelSessionManager,
             profiles = profileRepository,
             catalogue = endpointCatalogueRepository,
+            scope = applicationScope,
+        )
+    }
+
+    /**
+     * The connected screen's numbers: a monotonic session timer and throughput derived
+     * from the tunnel's own byte counters.
+     *
+     * `elapsedRealtime` is the monotonic source, which is the point: a user changing the
+     * device clock, an NTP correction or a daylight-saving jump must not move the session
+     * timer, and must not make a rate negative.
+     */
+    val connectedSessionTracker: ConnectedSessionTracker by lazy {
+        ConnectedSessionTracker(
+            sessionManager = tunnelSessionManager,
+            catalogue = endpointCatalogueRepository,
+            profiles = profileRepository,
+            probe = latencyProbe,
+            elapsedRealtime = android.os.SystemClock::elapsedRealtime,
             scope = applicationScope,
         )
     }

@@ -60,6 +60,7 @@ fun KXNavHost(
     catalogueRepository: com.kx.vpn.data.EndpointCatalogueRepository? = null,
     latencyProbe: com.kx.vpn.platform.TcpLatencyProbe? = null,
     switchController: com.kx.vpn.data.EndpointSwitchController? = null,
+    sessionTracker: com.kx.vpn.data.ConnectedSessionTracker? = null,
     networkAvailability: com.kx.vpn.platform.NetworkAvailability? = null,
     onConnect: () -> Unit = {},
 ) {
@@ -213,11 +214,14 @@ fun KXNavHost(
             arguments = listOf(degradedArg),
         ) { entry ->
             val sessionState = sessionManager?.state?.collectAsStateWithLifecycle()?.value
+            val connectedSession = sessionTracker?.state?.collectAsStateWithLifecycle()?.value
             HomeSurface(
                 sessionState = sessionState,
+                connectedSession = connectedSession,
                 onConnect = onConnect,
                 onDisconnect = { sessionManager?.disconnect() },
                 onOpenServers = { navController.navigate(KXRoute.Servers) },
+                onPingAgain = { sessionTracker?.pingEndpoint() },
             )
         }
     }
@@ -234,9 +238,11 @@ fun KXNavHost(
 @Composable
 private fun HomeSurface(
     sessionState: com.kx.vpn.data.TunnelSessionState?,
+    connectedSession: com.kx.vpn.data.ConnectedSessionState?,
     onConnect: () -> Unit,
     onDisconnect: () -> Unit,
     onOpenServers: () -> Unit,
+    onPingAgain: () -> Unit,
 ) {
     if (sessionState == null) {
         PlaceholderScreen(
@@ -254,6 +260,9 @@ private fun HomeSurface(
             session = sessionState,
             onConnect = onConnect,
             onDisconnect = onDisconnect,
+            connectedSession = connectedSession,
+            onChangeServer = onOpenServers,
+            onPingAgain = onPingAgain,
             modifier = Modifier.weight(1f),
         )
         com.kx.vpn.ui.home.HomeTabBar(

@@ -48,6 +48,7 @@ import com.kx.vpn.domain.tunnel.FailureReason
 import com.kx.vpn.domain.tunnel.TunnelState
 import com.kx.vpn.ui.brand.GlassCard
 import com.kx.vpn.ui.brand.KXOrb
+import com.kx.vpn.ui.connected.ConnectedSessionContent
 import com.kx.vpn.ui.theme.KXDimens
 import com.kx.vpn.ui.theme.KXPalette
 import com.kx.vpn.ui.theme.KXTypography
@@ -71,8 +72,33 @@ fun HomeScreen(
     onConnect: () -> Unit,
     onDisconnect: () -> Unit,
     modifier: Modifier = Modifier,
+    connectedSession: com.kx.vpn.data.ConnectedSessionState? = null,
+    onChangeServer: () -> Unit = {},
+    onPingAgain: () -> Unit = {},
 ) {
     val glass = LocalKXGlass.current
+
+    // The connected session is a different screen, not the disconnected one with the
+    // button relabelled. It is shown only when the backend says the tunnel interface is
+    // up, which is the same condition the ring's headline uses.
+    if (session.tunnelState == TunnelState.CONNECTED && connectedSession != null) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .systemBarsPadding(),
+        ) {
+            HomeHeader()
+            ConnectedSessionContent(
+                tunnelState = session.tunnelState,
+                session = connectedSession,
+                onDisconnect = onDisconnect,
+                onChangeServer = onChangeServer,
+                onPingAgain = onPingAgain,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        return
+    }
 
     Column(
         modifier = modifier

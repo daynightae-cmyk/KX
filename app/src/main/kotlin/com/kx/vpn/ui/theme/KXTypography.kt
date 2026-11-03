@@ -41,8 +41,22 @@ object KXTypography {
         lineHeight = 30.sp,
     )
 
-    val Body = TextStyle(
+    /**
+     * The figure inside a metric tile.
+     *
+     * Smaller than `Title` on purpose: three tiles across 360dp give each one about 88dp
+     * of content, and "5.8 Mbit/s" at 22sp does not fit there — it wrapped the unit's slash
+     * onto its own line. 18sp keeps the number and its unit together at the narrowest
+     * supported width.
+     */
+    val MetricValue = TextStyle(
         fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 18.sp,
+        lineHeight = 24.sp,
+    )
+
+    val Body = TextStyle(        fontFamily = FontFamily.SansSerif,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
