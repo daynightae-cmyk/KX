@@ -10,7 +10,7 @@ below records only what has primary evidence, and each task's full evidence live
 | --- | --- | --- | --- | --- | --- |
 | TASK_00 | MERGED_VERIFIED (limited scope, see note) | `9278d72fb6bce645f7df22bab4504cbd174f5ad4` | [#1](https://github.com/daynightae-cmyk/KX/pull/1) | `98e6e46cb5d21c4933bc47e949a0a122a16f25a8` | 33/33 JVM tests re-executed on `main` with `--rerun-tasks`; lint clean; `assembleDebug` + `assembleDebugAndroidTest` green; CI success on both the PR SHA (run 41599482673) and the merge SHA (run 41600267115); 10 Compose renders in `docs/evidence/TASK_00/`. **DEVICE_UNVERIFIED** — no emulator/device (BLOCKER-001). |
 | TASK_01 | MERGED_VERIFIED (limited scope) | `0de690bfb0c37def858a65900dcf92d4095272d9` | [#10](https://github.com/daynightae-cmyk/KX/pull/10) | `572ac8e157f7c36b45d7d3e9495af21a75dc1f95` | 93/93 JVM tests; lint clean; debug+test APKs; 9 Compose renders; **instrumented suite executed on emulator API 26 and API 35 — 10/10, 0 failed, 0 skipped** (runs 41613401712, 41615330348) with real framebuffer screenshots committed. No physical device. No transport. |
-| TASK_02 | PR_OPEN | pending | pending | pending | 158/158 JVM tests; lint clean; debug+test APKs; real `VpnService` + state machine + keystore-encrypted profiles; 6 home renders. **VPN_END_TO_END_BLOCKED** — no owned gateway, so no handshake/traffic/DNS/leak proof. |
+| TASK_02 | MERGED_VERIFIED (engine/state/storage/UI) + VPN_END_TO_END_BLOCKED | `8a4b79f` | [#12](https://github.com/daynightae-cmyk/KX/pull/12) | `eaf264a51ccb2c5124e33ec7f920831f630e7051` | 158/158 JVM tests; lint clean; debug+test APKs; **16/16 instrumented tests on emulator API 26 and API 35** including a real AndroidKeyStore round-trip; real `VpnService` + state machine + keystore-encrypted profiles; 6 home renders. **VPN_END_TO_END_BLOCKED** — no owned gateway, so no handshake/traffic/DNS/leak proof. |
 | TASK_03 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_04 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_05 | NOT_STARTED | none | none | none | NOT_RUN |
@@ -62,3 +62,4 @@ A task with a demonstrably complete, tested and merged provider-free supported s
 
 | `8bd1392` | PR #8 — NOTICE.md + continuation directive + APK hygiene gate | run 41608365980 success |
 | `572ac8e` | PR #10 — TASK_01 welcome, disclosure, config inspection | build 41615330466 + device 41615330348 success |
+| `eaf264a` | PR #12 — TASK_02 VpnService, state machine, encrypted profiles | build 41629115629 + device 41629115640 success |

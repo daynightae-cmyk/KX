@@ -180,6 +180,39 @@ unit on separate lines.
   be tied to actual Android lockdown policy; none is implemented and no such claim is
   made.
 
+## G6 — Integration
+
+| Field | Value |
+|---|---|
+| BASE_SHA | `1080767f9529ad1793e88822a4a3b353384140f2` |
+| IMPLEMENTATION_SHA | `8a4b79f` (branch head before merge) |
+| PR | https://github.com/daynightae-cmyk/KX/pull/12 |
+| MERGE_SHA | `eaf264a51ccb2c5124e33ec7f920831f630e7051` |
+| ORIGIN_MAIN_SHA | `eaf264a51ccb2c5124e33ec7f920831f630e7051` |
+
+CI on the exact implementation SHA:
+
+```
+Build, lint and unit tests   pass  3m18s   (run 41629115629)
+Repository hygiene            pass  7s
+Android emulator API 26       pass  4m16s   (run 41629115640)
+Android emulator API 35       pass  4m47s   (run 41629115640)
+```
+
+Instrumented execution, from the device run log:
+
+```
+emulator-5554 - 15 Tests    16/16 completed. (0 skipped) (0 failed)   # API 35
+emulator-5554 - 8.0.0 Tests 16/16 completed. (0 skipped) (0 failed)   # API 26
+```
+
+The first device run **failed**, on my own assertion rather than on the app: the test
+claimed a profile removed before the start prevents the tunnel, but used a platform
+that grants consent immediately, so the start happened before the profile could
+disappear. That is the same mistake the JVM test had already been corrected for,
+repeated in the instrumented copy. The scenario now requires consent, so the session
+genuinely waits.
+
 ## Status
 
 `LOCALLY_VERIFIED` for the engine, state machine, storage, service plumbing and UI, and
