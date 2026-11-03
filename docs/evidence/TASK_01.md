@@ -18,7 +18,7 @@ caller on purpose; this task is that caller.
 | G1 Visual | PASS WITH RECORDED DEVIATIONS | 9 new Compose renders (`11`–`19`) covering Day/Night, EN/AR, RTL/LTR, 360dp/411dp. |
 | G2 Function | PASS | Real navigation, real DataStore write, real SAF picker, real parser. No placeholder left on the first-run path. |
 | G3 Automated | PASS | 93/93 JVM tests, lint clean with `abortOnError`, `assembleDebug`, `assembleDebugAndroidTest`. |
-| G4 Runtime | **EXECUTED ON CI EMULATOR — see note** | `KX Android Device Runtime` runs the instrumented suite on emulator API 26 and API 35. |
+| G4 Runtime | **PASS on CI emulators** | Instrumented suite executed on emulator API 26 and API 35: `10/10 completed, 0 failed, 0 skipped` on both. Real framebuffer screenshots in `docs/evidence/TASK_01/device/`. Physical device still not done. |
 | G5 VPN/security | PARTIAL | Parser boundary and secret-redaction are tested. No transport exists yet, so no handshake/DNS/leak proof is possible. |
 | G6 Integration | see PR section | |
 | G7 Handoff | PASS | This file, renders, ledger and blockers updated. |
@@ -131,6 +131,37 @@ if the honesty design ever regressed:
 6. **A test I wrote would have deadlocked**: collecting a never-emitting flow with
    `toList()` blocks the test dispatcher forever. Removed rather than left as a latent
    hang.
+
+## G4 — Actual emulator execution
+
+From the `KX Android Device Runtime` workflow, run `41613401712`, on the PR head SHA:
+
+```
+emulator-5554 - 15 Tests   10/10 completed. (0 skipped) (0 failed)   # API 35, google_apis x86_64, pixel_2
+emulator-5554 - 8.0.0 Tests 10/10 completed. (0 skipped) (0 failed)   # API 26
+```
+
+Both jobs green. The screenshots in `docs/evidence/TASK_01/device/` are framebuffer
+captures taken by the instrumentation itself, not JVM renders.
+
+### The device screenshot caught a visual defect my renders also had
+
+The first API 35 capture showed a **grey smudge in the upper-left corner in Day mode**.
+The corner vignette in `KXAtmosphericBackground` was hard-coded to 40% black, which reads
+as depth on the near-black night surface but mixes into mud over the pale lilac day
+surface.
+
+Two things worth recording honestly:
+
+1. The defect was **also present in my own JVM render** `12-welcome-day-411-en.png`. The
+   rendering pipeline caught it; I did not look at that frame closely enough before
+   shipping it in the PR. The device screenshot is what made it obvious.
+2. The fix is a theme-aware `atmosphereVignette` token on `KXGlassScheme`: night keeps a
+   deep navy, day deepens toward violet instead of black. Re-rendered and re-verified;
+   night is unchanged.
+
+This is the concrete argument for running on a device even when JVM renders exist: the
+render proves the composition, the device proves what a user actually sees.
 
 ## G1 — Visual comparison against `01-welcome.png`
 

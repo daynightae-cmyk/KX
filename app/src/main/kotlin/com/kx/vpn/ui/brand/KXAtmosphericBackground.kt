@@ -105,7 +105,7 @@ fun KXAtmosphericBackground(
             )
             drawRidgeHighlight(h * 0.62f, h * 0.05f, drift, w, h)
             drawRidgeHighlight(h * 0.80f, h * 0.04f, -drift, w, h)
-            drawCornerVignette(w, h)
+            drawCornerVignette(w, h, glass.atmosphereVignette)
         }
         content()
     }
@@ -203,10 +203,10 @@ private fun DrawScope.drawRidgeHighlight(
     )
 }
 
-private fun DrawScope.drawCornerVignette(w: Float, h: Float) {
+private fun DrawScope.drawCornerVignette(w: Float, h: Float, vignette: Color) {
     drawCircle(
         brush = Brush.radialGradient(
-            colorStops = arrayOf(0f to Color.Transparent, 1f to Color(0x66000000)),
+            colorStops = arrayOf(0f to Color.Transparent, 1f to vignette),
             center = Offset(w * 0.06f, h * 0.04f),
             radius = w * 0.6f,
         ),
