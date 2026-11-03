@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.annotation.DrawableRes
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -40,6 +42,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kx.vpn.R
 import com.kx.vpn.data.ConnectedSessionState
 import com.kx.vpn.domain.session.SessionTelemetry
@@ -112,7 +115,7 @@ fun ConnectedSessionContent(
 
         Spacer(modifier = Modifier.height(KXDimens.SpaceMd))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(KXDimens.SpaceSm)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(TileGutter)) {
             val download = SessionTelemetry.rateParts(session.throughput?.downloadBytesPerSecond)
             val upload = SessionTelemetry.rateParts(session.throughput?.uploadBytesPerSecond)
             MetricTile(
@@ -122,6 +125,7 @@ fun ConnectedSessionContent(
                 detail = session.rxBytes?.let {
                     stringResource(R.string.connected_total_received, SessionTelemetry.formatBytes(it))
                 } ?: stringResource(R.string.connected_no_sample),
+                iconRes = R.drawable.ic_kx_metric_download,
                 modifier = Modifier.weight(1f),
             )
             MetricTile(
@@ -131,6 +135,7 @@ fun ConnectedSessionContent(
                 detail = session.txBytes?.let {
                     stringResource(R.string.connected_total_sent, SessionTelemetry.formatBytes(it))
                 } ?: stringResource(R.string.connected_no_sample),
+                iconRes = R.drawable.ic_kx_metric_upload,
                 modifier = Modifier.weight(1f),
             )
             MetricTile(
@@ -142,20 +147,22 @@ fun ConnectedSessionContent(
                 } else {
                     stringResource(R.string.connected_ping_target)
                 },
+                iconRes = R.drawable.ic_kx_metric_ping,
                 onClick = onPingAgain,
                 clickLabel = stringResource(R.string.connected_measure_again),
                 modifier = Modifier.weight(1f),
             )
         }
 
-        Spacer(modifier = Modifier.height(KXDimens.SpaceSm))
+        Spacer(modifier = Modifier.height(KXDimens.SpaceMd))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(KXDimens.SpaceSm)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(TileGutter)) {
             MetricTile(
                 label = stringResource(R.string.connected_duration),
                 value = SessionTelemetry.formatDuration(session.elapsedMillis),
                 unit = "",
                 detail = stringResource(R.string.connected_duration_monotonic),
+                iconRes = R.drawable.ic_kx_clock,
                 modifier = Modifier.weight(1f),
             )
             MetricTile(
@@ -163,6 +170,7 @@ fun ConnectedSessionContent(
                 value = session.tunnelAddress ?: stringResource(R.string.connected_latency_unknown),
                 unit = "",
                 detail = stringResource(R.string.connected_tunnel_address_from_config),
+                iconRes = R.drawable.ic_kx_location,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -211,6 +219,23 @@ private fun TunnelState.headlineRes(): Int = when (this) {
     TunnelState.REVOKED -> R.string.home_status_revoked
 }
 
+/**
+ * Geometry measured off `assets/reference/04-connected-session.png` with
+ * `tools/measure_reference.py` at the artwork's own 411dp width, not estimated:
+ *
+ *  * the route card runs 420.5dp → 490.5dp, so it is **70dp** tall;
+ *  * the first tile band runs 500.1dp → 562.1dp and the second 578.7dp → 640.3dp, so a
+ *    tile is **62dp** tall with a **16dp** gap between the bands;
+ *  * the three tiles sit at 16.6→139, 148→269.5 and 278.7→394.8dp, i.e. about 121dp wide
+ *    with a **9.5dp** gutter, which is what `Arrangement.spacedBy(TileGutter)` reproduces
+ *    once the row is weighted equally.
+ */
+private val TileHeight = 62.dp
+private val TileGutter = 10.dp
+private val TileIcon = 28.dp
+private val RouteCardHeight = 70.dp
+private val RingSize = 300.dp
+
 @Composable
 private fun ConnectionRing(
     up: Boolean,
@@ -222,7 +247,7 @@ private fun ConnectionRing(
 
     Box(
         modifier = Modifier
-            .size(248.dp)
+            .size(RingSize)
             .semantics { contentDescription = ringDescription },
         contentAlignment = Alignment.Center,
     ) {
@@ -337,6 +362,7 @@ private fun RouteCard(session: ConnectedSessionState) {
     GlassCard(
         modifier = Modifier
             .fillMaxWidth()
+            .height(RouteCardHeight)
             .semantics { contentDescription = description },
         cornerRadius = KXDimens.CardInnerCorner,
         contentPadding = KXDimens.SpaceMd,
@@ -385,6 +411,7 @@ private fun MetricTile(
     value: String,
     unit: String,
     detail: String,
+    @DrawableRes iconRes: Int,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     clickLabel: String = "",
@@ -395,6 +422,7 @@ private fun MetricTile(
     }
     GlassCard(
         modifier = modifier
+            .height(TileHeight)
             .then(
                 if (onClick == null) {
                     Modifier.semantics { contentDescription = "$label. $value $unit. $detail" }
@@ -414,47 +442,64 @@ private fun MetricTile(
         contentPadding = KXDimens.SpaceSm,
         highlight = false,
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(PaddingValues(horizontal = KXDimens.SpaceXs)),
+        // The reference puts the icon at the left and the label above the figure, inside
+        // the same horizontal band. The first pass stacked label/value/detail vertically,
+        // which is why the tiles were much taller than the reference's.
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxSize(),
         ) {
-            Text(
-                text = label,
-                style = KXTypography.Caption.copy(color = glass.textSecondary),
-                maxLines = 1,
-            )
-            // One text element with two styles, not a Row of two Texts. A Row reversed by
-            // RTL put the Latin unit before the number and clipped "Mbit/s" to "Mbit" at
-            // 360dp; a single annotated string keeps bidi ordering correct and wraps
-            // instead of truncating.
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(KXTypography.MetricValue.copy(color = glass.textPrimary).toSpanStyle()) {
-                        append(value)
-                    }
-                    if (unit.isNotEmpty()) {
-                        // Non-breaking: a plain space let the unit wrap away from its
-                        // number, which reads as a measurement with no stated value.
-                        append(' ')
-                        withStyle(KXTypography.Caption.copy(color = glass.textSecondary).toSpanStyle()) {
-                            append(unit)
-                        }
-                    }
-                },
-                maxLines = 2,
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { contentDescription = value + " " + unit },
-            )
-            Text(
-                text = detail,
-                style = KXTypography.Caption.copy(color = glass.textSecondary),
-                // Three lines, not two: at 360dp the second line truncated "Measured to
-                // your server" to "Measured to your", which drops the only word that says
-                // what the number refers to.
-                maxLines = 3,
-            )
+                    .size(TileIcon)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.linearGradient(
+                            listOf(glass.orbCore.copy(alpha = 0.34f), glass.orbMid.copy(alpha = 0.20f)),
+                        ),
+                        CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(iconRes),
+                    contentDescription = null,
+                    tint = glass.latency,
+                    modifier = Modifier.size(15.dp),
+                )
+            }
+
+            Spacer(modifier = Modifier.width(KXDimens.SpaceSm))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    style = KXTypography.Caption.copy(
+                        color = glass.textSecondary,
+                        fontSize = 11.sp,
+                    ),
+                    maxLines = 1,
+                )
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(KXTypography.MetricValue.copy(color = glass.textPrimary).toSpanStyle()) {
+                            append(value)
+                        }
+                        if (unit.isNotEmpty()) {
+                            append(' ')
+                            withStyle(
+                                KXTypography.Caption.copy(
+                                    color = glass.textSecondary,
+                                    fontSize = 11.sp,
+                                ).toSpanStyle(),
+                            ) { append(unit) }
+                        }
+                    },
+                    // Two lines, wrapping rather than ellipsising: "11.5 Mbps" is a
+                    // measurement, and "11.5 Mb…" is a measurement with a lost unit.
+                    maxLines = 2,
+                )
+            }
         }
     }
 }

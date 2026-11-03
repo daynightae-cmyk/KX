@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 private val Context.preferencesDataStore by preferencesDataStore(name = "kx_catalogue")
+private val Context.securityPreferencesDataStore by preferencesDataStore(name = "kx_security")
 
 /**
  * Application-scoped service locator, kept deliberately small.
@@ -63,6 +64,10 @@ class KXApplication : Application() {
      * The endpoint catalogue. It holds metadata only — a label, an optional country,
      * a host and a port — and never the configuration itself.
      */
+    val securitySettingsRepository: com.kx.vpn.data.SecuritySettingsRepository by lazy {
+        com.kx.vpn.data.PreferencesSecuritySettingsRepository(this.securityPreferencesDataStore)
+    }
+
     val endpointCatalogueRepository: EndpointCatalogueRepository by lazy {
         EndpointCatalogueRepository(this.preferencesDataStore)
     }
@@ -78,7 +83,13 @@ class KXApplication : Application() {
     val tunnelSessionManager: TunnelSessionManager by lazy {
         TunnelSessionManager(
             platform = AndroidTunnelPlatform(this),
-            profileSource = { profileRepository.activeConfigText() },
+            profileSource = {
+                val raw = profileRepository.activeConfigText()
+                if (raw != null) {
+                    val sec = kotlinx.coroutines.runBlocking { securitySettingsRepository.settings.first() }
+                    com.kx.vpn.domain.config.VpnConfigModifier.applySecuritySettings(raw, sec)
+                } else null
+            },
         )
     }
 

@@ -24,5 +24,23 @@ object KXRoute {
     /** The user's own endpoint catalogue. */
     const val Servers: String = "servers"
 
+    /** Security center with leak protection and kill switch toggles. */
+    const val Security: String = "security"
+
+    /** Per-app routing rules. */
+    const val SplitTunneling: String = "split_tunneling"
+
+    /** Protocols, MTU, DNS mode and keepalive controls. */
+    const val AdvancedNetwork: String = "advanced_network"
+
+    /** Historical data usage, ping trends and speed telemetry. */
+    const val Statistics: String = "statistics"
+
+    /** QR scanner, clipboard and manual setup entry points. */
+    const val ImportConfig: String = "import_config"
+
+    /** Profile and user preferences. */
+    const val ProfileSettings: String = "profile_settings"
+
     const val ArgStorageDegraded: String = "storageDegraded"
 }

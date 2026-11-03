@@ -60,6 +60,7 @@ fun KXNavHost(
     catalogueRepository: com.kx.vpn.data.EndpointCatalogueRepository? = null,
     latencyProbe: com.kx.vpn.platform.TcpLatencyProbe? = null,
     switchController: com.kx.vpn.data.EndpointSwitchController? = null,
+    securityRepository: com.kx.vpn.data.SecuritySettingsRepository? = null,
     sessionTracker: com.kx.vpn.data.ConnectedSessionTracker? = null,
     networkAvailability: com.kx.vpn.platform.NetworkAvailability? = null,
     onConnect: () -> Unit = {},
@@ -209,6 +210,29 @@ fun KXNavHost(
             )
         }
 
+        composable(KXRoute.Security) {
+            val secRepo = securityRepository
+            if (secRepo != null) {
+                val secViewModel: com.kx.vpn.ui.security.SecurityCenterViewModel = viewModel(
+                    factory = com.kx.vpn.ui.security.SecurityCenterViewModelFactory(secRepo),
+                )
+                val settings by secViewModel.settings.collectAsStateWithLifecycle()
+                val isTunnelUp = sessionManager?.state?.collectAsStateWithLifecycle()?.value?.isTunnelUp ?: false
+
+                com.kx.vpn.ui.security.SecurityCenterScreen(
+                    isTunnelUp = isTunnelUp,
+                    settings = settings,
+                    onToggleKillSwitch = secViewModel::setKillSwitch,
+                    onToggleDnsLeakProtection = secViewModel::setDnsLeakProtection,
+                    onToggleIpv6Protection = secViewModel::setIpv6Protection,
+                    onToggleAutoReconnect = secViewModel::setAutoReconnect,
+                    onToggleTrackerBlocking = secViewModel::setTrackerBlocking,
+                    onToggleAlwaysOnVpn = secViewModel::setAlwaysOnVpn,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+        }
+
         composable(
             route = "${KXRoute.Home}?{${KXRoute.ArgStorageDegraded}}",
             arguments = listOf(degradedArg),
@@ -221,6 +245,7 @@ fun KXNavHost(
                 onConnect = onConnect,
                 onDisconnect = { sessionManager?.disconnect() },
                 onOpenServers = { navController.navigate(KXRoute.Servers) },
+                onOpenSecurity = { navController.navigate(KXRoute.Security) },
                 onPingAgain = { sessionTracker?.pingEndpoint() },
             )
         }
@@ -242,6 +267,7 @@ private fun HomeSurface(
     onConnect: () -> Unit,
     onDisconnect: () -> Unit,
     onOpenServers: () -> Unit,
+    onOpenSecurity: () -> Unit = {},
     onPingAgain: () -> Unit,
 ) {
     if (sessionState == null) {
@@ -268,11 +294,13 @@ private fun HomeSurface(
         com.kx.vpn.ui.home.HomeTabBar(
             selected = com.kx.vpn.ui.home.HomeTab.Home,
             onSelect = { tab ->
-                if (tab == com.kx.vpn.ui.home.HomeTab.Servers) {
-                    onOpenServers()
+                when (tab) {
+                    com.kx.vpn.ui.home.HomeTab.Servers -> onOpenServers()
+                    com.kx.vpn.ui.home.HomeTab.Security -> onOpenSecurity()
+                    else -> {}
                 }
             },
-            enabledTabs = setOf(com.kx.vpn.ui.home.HomeTab.Servers),
+            enabledTabs = setOf(com.kx.vpn.ui.home.HomeTab.Servers, com.kx.vpn.ui.home.HomeTab.Security),
         )
     }
 }
