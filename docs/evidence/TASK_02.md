@@ -151,3 +151,25 @@ compiler coroutines1.8.0; Android app-pinned suite and automatic device CI must 
 on the patch's exact published SHA. No real gateway/handshake/DNS/route/traffic proof,
 TalkBack, unknown-cleanup native lifecycle proof or visual comparison is inferred from
 these controlled tests. Existing task blockers remain. No merge or workflow change.
+
+### Cancellation-patch exact-SHA CI feedback
+
+At published `47d3e3251ea2ccebaf5ab18f77ee86e864db58dd`:
+- Build run `41627441359`, job `125888309728`: success, **112 executed JVM tests
+  passed** including the 19 session tests; Lint/APKs successful.
+- Runtime run `41627441392`: API35 job `125888232547` success; API26 job
+  `125888232165` **failed**. Named failure: `LaunchInstrumentedTest >
+  brandEmblemIsPresentAndAnnounced`; run incomplete (`Expected 13 tests, received 3`).
+  No stack detail was printed by AGP in the available log. Emulator output recorded
+  a second `Boot completed in 7786 ms` during the test sequence after an earlier
+  completed boot. This is an **observation**, not proof of a flaky test, root cause,
+  production crash or cancellation-fix regression. Do not relabel it PASS.
+
+To improve the next automatic run's evidence, the existing runner now prints a small
+structured index of failed-test exception **types** and source **frames** from JUnit
+XML. It never dumps exception messages, config values, UI hierarchy or crash-logcat
+contents into logs. Three local summary tests prove messages/untrusted names are
+withheld and malformed reports do not reveal contents. The existing runner's seven
+exit/evidence cases still pass; original failing test exit status is preserved. No
+workflow changes, hidden retries, skipped assertions or weakened CI gates. All
+prior collector behavior and other agents' work are retained.
