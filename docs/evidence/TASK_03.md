@@ -8,8 +8,9 @@ tunnel uses — including a live switch with rollback.
 
 **What is verified:** the catalogue rules, the measurement path, the switch state machine
 and its execution against a real `VpnService` session manager, persistence of the choice
-across restart, the UI in EN/AR, LTR/RTL, day/night, portrait and landscape, and the
-offline refusal.
+across restart, the UI in EN/AR, LTR/RTL, day/night, portrait and landscape, the offline
+refusal, and — on emulator API 26 and API 35 — the multi-write catalogue store and the
+screen on a real renderer.
 
 **What is not verified:** that any real endpoint answered. There is still no owned
 WireGuard gateway in this environment, so no handshake, no routed traffic, no DNS and no
@@ -183,15 +184,62 @@ row. Deliberate deviations:
   statistics work, where the formatting rules live.
 - **The settings gear is disabled**, as it has been since TASK_02. Settings is TASK_10.
 
+## G4 — Device runtime
+
+`ServerCatalogueInstrumentedTest` runs on the `KX Android Device Runtime` workflow, on
+emulator API 26 (Android 8.0.0) and API 35 (Android 15), `pixel_2`, `google_apis`, x86_64:
+
+```
+API 26: tests="23" failures="0" errors="0" skipped="0"   test-exit-code.txt: 0
+API 35: tests="23" failures="0" errors="0" skipped="0"   test-exit-code.txt: 0
+crash-logcat.txt: 0 bytes on both — no crash during the run
+```
+
+Seven of those are new in this task, and two of them are the reason the file exists:
+
+- **Several writes to the same preferences file on a real Android file system.** The JVM
+  behavioural tests use an in-memory store because androidx DataStore's `ATOMIC_MOVE`
+  without `REPLACE_EXISTING` cannot overwrite an existing file on Windows. On device that
+  limitation does not apply, and the multi-write path is the shipped path — so
+  `severalWritesRoundTripThroughTheRealDataStore` and
+  `theChosenEndpointSurvivesARepositoryReopen` prove it there rather than assuming it.
+- **The screen composes on a real renderer**: tapping a row reports the endpoint it was
+  given, an unmeasured row renders no latency substring at all (matched as a substring, so
+  it would actually find an invented number), and a disabled capability chip is displayed
+  and announced as not enabled.
+
+### The device run rejected my own test first
+
+The first attempt asserted that a disabled chip exposes **no `OnClick` semantics
+action**. It failed on both emulators — and it was the test that was wrong, not the app:
+`Modifier.clickable(enabled = false)` still publishes `OnClick`, because that is how
+Compose lets TalkBack announce a control as present but unavailable. The assertion now
+checks the enabled flag, which is what the user actually experiences. Recorded here
+because "the gate failed, then the test was corrected" is different from "the test passed
+first time".
+
+The `post-test-launch.png` in the artifact is the app's **launch** screen captured after
+the run, with a provenance file saying so. It is not a screenshot of the server screen and
+is not presented as one.
+
 ## G6 — Integration
 
 | Field | Value |
 |---|---|
 | BASE_SHA | `3654a0ff788ead2735b0d22ab997f36d25d0a1ad` |
-| IMPLEMENTATION_SHA | see PR below |
-| PR | see below |
+| IMPLEMENTATION_SHA | `ae64e2206b9bc218036317a0f11b128459ba0506` (PR head; `1d2ab73` is the implementation commit) |
+| PR | https://github.com/daynightae-cmyk/KX/pull/14 |
 | MERGE_SHA | pending |
 | ORIGIN_MAIN_SHA | pending |
+
+CI on the exact implementation SHA:
+
+```
+Repository hygiene            pass  (run 41655231971)
+Build, lint and unit tests    pass  (run 41655231971)
+Android emulator API 26       pass  (run 41655230608)
+Android emulator API 35       pass  (run 41655230608)
+```
 
 ## Status
 
