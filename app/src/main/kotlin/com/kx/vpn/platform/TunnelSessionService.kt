@@ -42,19 +42,24 @@ class TunnelSessionService : Service() {
             .build())
         scope.launch {
             repository.state.collect { snapshot ->
-                if (commanded && snapshot.phase in setOf(SessionPhase.Disconnected, SessionPhase.Failed)) stopSelf()
+                if (commanded && snapshot.problem != com.kx.vpn.domain.session.SessionProblem.CleanupRequired &&
+                    snapshot.phase in setOf(SessionPhase.Disconnected, SessionPhase.Failed)) stopSelf()
             }
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == STOP) {
-            scope.launch { repository.disconnect(); stopSelf() }
+            scope.launch {
+                repository.disconnect()
+                if (repository.state.value.problem != com.kx.vpn.domain.session.SessionProblem.CleanupRequired) stopSelf()
+            }
         } else if (intent?.action == START && !commanded) {
             commanded = true
             scope.launch {
                 repository.connect()
-                if (repository.state.value.phase != SessionPhase.Up) stopSelf()
+                if (repository.state.value.phase != SessionPhase.Up &&
+                    repository.state.value.problem != com.kx.vpn.domain.session.SessionProblem.CleanupRequired) stopSelf()
             }
         } else if (intent?.action != START) stopSelf()
         return START_NOT_STICKY

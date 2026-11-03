@@ -1,6 +1,9 @@
 package com.kx.vpn.domain.session
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -9,7 +12,7 @@ import kotlinx.coroutines.sync.withLock
 
 /** UP is only a backend fact, never a claim of handshake, Internet or protection. */
 enum class SessionPhase { Unconfigured, Disconnected, Connecting, Up, Disconnecting, Failed }
-enum class SessionProblem { None, Configuration, PermissionDenied, Backend, Storage }
+enum class SessionProblem { None, Configuration, PermissionDenied, Backend, Storage, CleanupRequired }
 data class SessionSnapshot(
     val phase: SessionPhase = SessionPhase.Unconfigured,
     val problem: SessionProblem = SessionProblem.None,
@@ -29,33 +32,51 @@ class SessionController(private val driver: TunnelDriver) {
     val state: StateFlow<SessionSnapshot> = mutable.asStateFlow()
 
     suspend fun configured() = lock.withLock {
+        check(mutable.value.problem != SessionProblem.CleanupRequired)
         check(mutable.value.phase !in setOf(SessionPhase.Up, SessionPhase.Connecting, SessionPhase.Disconnecting))
         mutable.value = SessionSnapshot(SessionPhase.Disconnected)
     }
 
     fun permissionDenied() {
-        if (mutable.value.phase in setOf(SessionPhase.Disconnected, SessionPhase.Failed)) {
+        if (mutable.value.problem != SessionProblem.CleanupRequired &&
+            mutable.value.phase in setOf(SessionPhase.Disconnected, SessionPhase.Failed)) {
             mutable.value = SessionSnapshot(SessionPhase.Disconnected, SessionProblem.PermissionDenied)
         }
     }
 
     suspend fun connect() = lock.withLock {
-        if (mutable.value.phase !in setOf(SessionPhase.Disconnected, SessionPhase.Failed)) return@withLock
+        if (mutable.value.problem == SessionProblem.CleanupRequired ||
+            mutable.value.phase !in setOf(SessionPhase.Disconnected, SessionPhase.Failed)) return@withLock
         mutable.value = SessionSnapshot(SessionPhase.Connecting)
         val generation = synchronized(callbackLock) { downGeneration }
         try {
             val up = driver.start()
-            synchronized(callbackLock) {
-                mutable.value = if (up && generation == downGeneration) SessionSnapshot(SessionPhase.Up)
-                else SessionSnapshot(SessionPhase.Failed, SessionProblem.Backend)
+            val stillUp = synchronized(callbackLock) {
+                if (up && generation == downGeneration) {
+                    mutable.value = SessionSnapshot(SessionPhase.Up)
+                    true
+                } else false
             }
+            if (!stillUp) failAfterCleanup()
         } catch (cancelled: CancellationException) {
-            // Do not report a connection after cancelling the command's owner.
-            mutable.value = SessionSnapshot(SessionPhase.Failed, SessionProblem.Backend)
+            // The native call may already have created the tunnel when withContext
+            // resumes into a cancelled owner. Changing UI state is not teardown.
+            failAfterCleanup()
             throw cancelled
         } catch (_: Exception) {
-            mutable.value = SessionSnapshot(SessionPhase.Failed, SessionProblem.Backend)
+            failAfterCleanup()
         }
+    }
+
+    /** Best effort with a cooperative deadline; not a hard bound on blocking JNI. */
+    private suspend fun failAfterCleanup() {
+        val stopped = withContext(NonCancellable) {
+            withTimeoutOrNull(5_000L) {
+                try { driver.stop() } catch (_: Exception) { false }
+            } == true
+        }
+        mutable.value = SessionSnapshot(SessionPhase.Failed,
+            if (stopped) SessionProblem.Backend else SessionProblem.CleanupRequired)
     }
 
     suspend fun disconnect(preserveFailure: Boolean = false) = lock.withLock {
@@ -66,15 +87,15 @@ class SessionController(private val driver: TunnelDriver) {
         try {
             val stopped = driver.stop()
             mutable.value = when {
-                retainError -> previous
-                stopped -> SessionSnapshot(SessionPhase.Disconnected)
-                else -> SessionSnapshot(SessionPhase.Failed, SessionProblem.Backend)
+                !stopped -> SessionSnapshot(SessionPhase.Failed, SessionProblem.CleanupRequired)
+                retainError -> previous.copy(problem = SessionProblem.Backend)
+                else -> SessionSnapshot(SessionPhase.Disconnected)
             }
         } catch (cancelled: CancellationException) {
-            mutable.value = SessionSnapshot(SessionPhase.Failed, SessionProblem.Backend)
+            failAfterCleanup()
             throw cancelled
         } catch (_: Exception) {
-            mutable.value = SessionSnapshot(SessionPhase.Failed, SessionProblem.Backend)
+            mutable.value = SessionSnapshot(SessionPhase.Failed, SessionProblem.CleanupRequired)
         }
     }
 

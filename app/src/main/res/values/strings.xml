@@ -104,4 +104,5 @@
     <string name="tunnel_measurements_unavailable">Ping —   Download —   Upload —   Public IP —
 No measured network results available.</string>
     <string name="tunnel_limits">WireGuard only. No server fleet, subscription, verified handshake, leak protection or kill-switch claim. Routing depends on your file. Android consent is requested only when you connect.</string>
+    <string name="tunnel_cleanup_required">Tunnel shutdown is unconfirmed. Retry Disconnect or use Android VPN settings. New connections and profile replacement are blocked until shutdown is confirmed.</string>
 </resources>

@@ -109,3 +109,45 @@ of TASK_03–06 occurred. Controlled transport, consent/revocation/foreground li
 true process-kill, network-change/airplane/doze, complete Home visuals and physical
 hardware remain acceptance gates. The automatic workflow is operational; no YAML
 request is needed. Status remains **PARTIAL / VPN_END_TO_END_BLOCKED**, not COMPLETE.
+
+## Follow-up: cancellation is not teardown (2026-11-03)
+
+Baseline for this patch: draft #11 head `ce7fcb2c2236296466f4b5a2b309e61a2cc0deec`.
+The candidate's cancellation/exception path changed state to Failed but never called
+`TunnelDriver.stop()`. The actual adapter uses `withContext(IO)` around native work;
+that work may have completed before the cancelled owner resumes. A UI failure does
+not prove that Android/native routing was torn down.
+
+Reproduced **before changing production code** with two focused regressions:
+14 tests run / **2 failed** — cancelled-start cleanup and thrown-start cleanup both
+observed no stop request (expected 1, actual 0 / stopped flag false). These are
+controlled-driver reproductions, not evidence of a real-device leak or production harm.
+
+Fix and safeguards:
+- Failed/cancelled/invalidated starts attempt backend stop outside parent cancellation
+  before returning an error; cancellation still propagates to the caller.
+- Cancelled disconnect also retries shutdown outside the cancelled owner.
+- Cleanup has a five-second **cooperative** timeout. It cannot forcibly interrupt
+  blocking JNI/OS code; no hard deadline or guaranteed shutdown claim.
+- False/throwing/timed-out shutdown yields explicit `CleanupRequired`, not a clean
+  disconnected state. Profile replacement and new connection commands are blocked;
+  Home explains uncertainty in AR/EN and keeps Disconnect available. The foreground
+  owner does not stop itself solely because this unresolved condition is a failure.
+- Confirmed subsequent Disconnect unblocks operation. A permission-denial callback
+  cannot erase the cleanup warning. Backend error messages/config values stay out
+  of the state. Cancellation of a command still waiting for the mutex cannot stop
+  another command's tunnel.
+
+Seven added regression cases cover cancellation, partial start exception, unsuccessful
+cleanup/retry, exception redaction, cancelled stop, native-style blocking IO completion
+following cancellation and cancelled queued commands. Existing cleanup test now counts
+its follow-up stop relative to the immediate failed-start cleanup rather than assuming
+that no earlier cleanup occurred. Test-driver failure returning false for BOTH start
+and stop now requires CleanupRequired; this is a stricter honest state, not a relaxed
+assertion.
+
+Standalone source check: **19 tests passed** using Kotlin2.1.20/JDK17/JUnit4.13.2 and
+compiler coroutines1.8.0; Android app-pinned suite and automatic device CI must be read
+on the patch's exact published SHA. No real gateway/handshake/DNS/route/traffic proof,
+TalkBack, unknown-cleanup native lifecycle proof or visual comparison is inferred from
+these controlled tests. Existing task blockers remain. No merge or workflow change.

@@ -51,7 +51,8 @@ fun HomeScreen(viewModel: HomeViewModel) {
     val error by viewModel.error.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val glass = LocalKXGlass.current
-    val active = snapshot.phase in setOf(SessionPhase.Up, SessionPhase.Connecting, SessionPhase.Disconnecting)
+    val cleanupRequired = snapshot.problem == com.kx.vpn.domain.session.SessionProblem.CleanupRequired
+    val active = cleanupRequired || snapshot.phase in setOf(SessionPhase.Up, SessionPhase.Connecting, SessionPhase.Disconnecting)
     fun start() {
         try {
             // Recheck consent immediately before dispatch, including revocation races.
@@ -83,7 +84,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
             Text(stringResource(R.string.home_title), Modifier.semantics { heading() },
                 style = KXTypography.Display.copy(color = glass.textPrimary))
             KXOrb(size = KXDimens.OrbMedium)
-            Text(stringResource(when (snapshot.phase) {
+            Text(stringResource(if (cleanupRequired) R.string.tunnel_cleanup_required else when (snapshot.phase) {
                 SessionPhase.Unconfigured -> R.string.tunnel_unconfigured
                 SessionPhase.Disconnected -> R.string.tunnel_disconnected
                 SessionPhase.Connecting -> R.string.tunnel_connecting

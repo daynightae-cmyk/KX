@@ -53,6 +53,7 @@ class WireGuardSessionRepository(context: Context) {
 
     suspend fun saveOwnedConfig(bytes: ByteArray): Boolean = operations.withLock {
         withContext(Dispatchers.IO) {
+            if (state.value.problem == com.kx.vpn.domain.session.SessionProblem.CleanupRequired) return@withContext false
             if (state.value.phase !in setOf(
                     com.kx.vpn.domain.session.SessionPhase.Unconfigured,
                     com.kx.vpn.domain.session.SessionPhase.Disconnected,
