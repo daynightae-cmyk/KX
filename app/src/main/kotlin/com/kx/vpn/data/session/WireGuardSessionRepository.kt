@@ -28,7 +28,7 @@ class WireGuardSessionRepository(context: Context) {
             if (newState == Tunnel.State.DOWN) controller.backendDown()
         }
     }
-    val controller = SessionController(object : TunnelDriver {
+    val controller: SessionController = SessionController(object : TunnelDriver {
         override suspend fun start(): Boolean = withContext(Dispatchers.IO) {
             val bytes = store.read()
             try {

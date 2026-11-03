@@ -52,7 +52,10 @@ class TunnelSessionService : Service() {
             scope.launch { repository.disconnect(); stopSelf() }
         } else if (intent?.action == START && !commanded) {
             commanded = true
-            scope.launch { repository.connect() }
+            scope.launch {
+                repository.connect()
+                if (repository.state.value.phase != SessionPhase.Up) stopSelf()
+            }
         } else if (intent?.action != START) stopSelf()
         return START_NOT_STICKY
     }
