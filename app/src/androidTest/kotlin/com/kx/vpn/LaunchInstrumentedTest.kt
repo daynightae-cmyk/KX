@@ -157,12 +157,12 @@ class LaunchInstrumentedTest {
         awaitDestination()
         if (!hasNodes(text(R.string.home_title))) return // First run: Home is not on screen.
 
-        composeRule.onNodeWithText(text(R.string.home_action)).assertIsNotEnabled()
+        composeRule.onNodeWithText(text(R.string.tunnel_connect)).assertIsNotEnabled()
     }
 
     /**
      * TASK_01 must not raise a VPN permission prompt or any other dialog on first run.
-     * The manifest declares zero permissions, so there is nothing to ask for; this
+     * Network/foreground permissions are declared only for explicit tunnel use; this
      * asserts the app reaches a destination rather than blocking on a grant sheet.
      */
     @Test

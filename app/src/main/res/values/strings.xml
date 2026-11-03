@@ -86,4 +86,22 @@
     <string name="config_issue_no_allowed_ips">A peer has no AllowedIPs.</string>
     <string name="config_issue_invalid_keepalive">PersistentKeepalive is out of range.</string>
     <string name="config_issue_invalid_mtu">MTU is out of range.</string>
+    <string name="tunnel_channel">VPN session</string>
+    <string name="tunnel_notification_title">KX WireGuard session</string>
+    <string name="tunnel_notification_body">User-requested tunnel. Internet reachability is not verified.</string>
+    <string name="tunnel_disconnect">Disconnect</string>
+    <string name="tunnel_connect">Connect to owned endpoint</string>
+    <string name="tunnel_unconfigured">No tunnel configured</string>
+    <string name="tunnel_disconnected">Disconnected</string>
+    <string name="tunnel_connecting">Starting WireGuard…</string>
+    <string name="tunnel_disconnecting">Stopping WireGuard…</string>
+    <string name="tunnel_up">Tunnel UP · Internet not verified</string>
+    <string name="tunnel_failed">Tunnel operation failed</string>
+    <string name="tunnel_action_error">Action failed or permission declined. No protection claim is made.</string>
+    <string name="tunnel_owned_title">Your endpoint, your configuration</string>
+    <string name="tunnel_owned_body">Choose a WireGuard file only for a gateway you own or are authorized to use. Selecting a valid file replaces the single saved profile, encrypted on this device. No upload or automatic connection.</string>
+    <string name="tunnel_save_config">Choose and save encrypted profile</string>
+    <string name="tunnel_measurements_unavailable">Ping —   Download —   Upload —   Public IP —
+No measured network results available.</string>
+    <string name="tunnel_limits">WireGuard only. No server fleet, subscription, verified handshake, leak protection or kill-switch claim. Routing depends on your file. Android consent is requested only when you connect.</string>
 </resources>

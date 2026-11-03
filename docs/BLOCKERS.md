@@ -60,3 +60,14 @@ Recorded during TASK_01 because it changes what later tasks may claim.
 - **Still blocked and unchanged:** a physical Android device, and any real VPN transport
   proof (no gateway is provisioned), so G5 network claims remain blocked until an owned
   endpoint exists.
+
+## TASK_02 candidate — controlled transport proof
+
+Branch `agent/task02-wireguard-session` adds native WireGuard/consent/foreground
+ownership and encrypted local single-profile storage. **VPN_END_TO_END_BLOCKED**:
+no owned/authorized test gateway is available in this session, so handshake, route,
+DNS/IPv4/IPv6 and real traffic/teardown proof are NOT VERIFIED. Platform consent,
+revocation/foreground lifecycle and Home visual evidence still need exact-SHA
+Android CI/device validation. Native dependency advisories/16KB pages and Android
+specialUse policy remain review gates. Keep draft, no merge; TASK_03–06 are not
+silently marked complete. No secret or replacement token is requested via chat.

@@ -100,15 +100,15 @@ fun KXNavHost(
         composable(
             route = "${KXRoute.Home}?{${KXRoute.ArgStorageDegraded}}",
             arguments = listOf(degradedArg),
-        ) { entry ->
-            PlaceholderScreen(
-                title = stringResource(R.string.home_title),
-                body = stringResource(R.string.home_body),
-                actionLabel = stringResource(R.string.home_action),
-                actionDisabledReason = stringResource(R.string.home_action_unavailable),
-                storageDegraded =
-                    entry.arguments?.getBoolean(KXRoute.ArgStorageDegraded) ?: false,
-            )
+        ) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val app = context.applicationContext as com.kx.vpn.KXApplication
+            val home: com.kx.vpn.ui.home.HomeViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
+                    com.kx.vpn.ui.home.HomeViewModel(app.sessionRepository) as T
+            })
+            com.kx.vpn.ui.home.HomeScreen(home)
         }
     }
 }

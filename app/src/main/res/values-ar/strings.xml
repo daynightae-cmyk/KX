@@ -82,4 +82,22 @@
     <string name="config_issue_no_allowed_ips">أحد الأقران بلا AllowedIPs.</string>
     <string name="config_issue_invalid_keepalive">قيمة PersistentKeepalive خارج المدى.</string>
     <string name="config_issue_invalid_mtu">قيمة MTU خارج المدى.</string>
+    <string name="tunnel_channel">جلسة VPN</string>
+    <string name="tunnel_notification_title">جلسة WireGuard في KX</string>
+    <string name="tunnel_notification_body">نفق بطلب المستخدم. لم يُتحقق من الوصول إلى الإنترنت.</string>
+    <string name="tunnel_disconnect">قطع الاتصال</string>
+    <string name="tunnel_connect">اتصال بنقطة اتصالك الخاصة</string>
+    <string name="tunnel_unconfigured">لم يُضبط نفق بعد</string>
+    <string name="tunnel_disconnected">غير متصل</string>
+    <string name="tunnel_connecting">جارٍ تشغيل WireGuard…</string>
+    <string name="tunnel_disconnecting">جارٍ إيقاف WireGuard…</string>
+    <string name="tunnel_up">النفق مفعّل · الإنترنت غير متحقق</string>
+    <string name="tunnel_failed">تعذّرت عملية النفق</string>
+    <string name="tunnel_action_error">تعذّر الإجراء أو رُفض الإذن. لا ندّعي تحقق الحماية.</string>
+    <string name="tunnel_owned_title">نقطة اتصالك وإعدادك الخاص</string>
+    <string name="tunnel_owned_body">اختر ملف WireGuard لبوابة تملكها أو لديك إذن باستخدامها. اختيار ملف صالح يستبدل الإعداد الوحيد المحفوظ مشفّرًا على جهازك. لا رفع ولا اتصال تلقائي.</string>
+    <string name="tunnel_save_config">اختيار إعداد وحفظه مشفّرًا</string>
+    <string name="tunnel_measurements_unavailable">زمن الاستجابة —   التنزيل —   الرفع —   عنوان IP العام —
+لا توجد نتائج شبكة مقاسة.</string>
+    <string name="tunnel_limits">WireGuard فقط. لا خوادم عامة أو اشتراك أو ادعاء بتحقق المصافحة أو منع التسريب أو مفتاح قطع. يعتمد التوجيه على ملفك. يُطلب إذن أندرويد عند الاتصال فقط.</string>
 </resources>
