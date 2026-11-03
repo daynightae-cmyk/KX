@@ -189,4 +189,26 @@
     <string name="connected_disconnect">قطع الاتصال</string>
     <string name="connected_change_server">تغيير الخادم</string>
     <string name="connected_measure_again">قِس من جديد</string>
+
+    <!-- TASK_05 · مركز الأمان -->
+    <string name="security_center_title">مركز الأمان</string>
+    <string name="security_status_protected">محمي بالكامل</string>
+    <string name="security_status_unprotected">الحماية غير مفعّلة</string>
+    <string name="security_subtitle_protected">اتصالك وبياناتك مؤمنة بالكامل</string>
+    <string name="security_subtitle_unprotected">اتصل بـ KX VPN لتفعيل مزايا الأمان</string>
+    <string name="security_badge_on">مفعّل</string>
+    <string name="security_badge_off">معطّل</string>
+    <string name="security_kill_switch_title">مفتاح القفل (Kill Switch)</string>
+    <string name="security_kill_switch_desc">قطع الإنترنت إذا انقطع اتصال VPN.</string>
+    <string name="security_dns_leak_title">حماية تسريب DNS</string>
+    <string name="security_dns_leak_desc">منع طلبات DNS من تجاوز نفق VPN.</string>
+    <string name="security_ipv6_title">حماية IPv6</string>
+    <string name="security_ipv6_desc">منع تسريب حركة مرور IPv6 خارج النفق.</string>
+    <string name="security_auto_reconnect_title">إعادة الاتصال التلقائي</string>
+    <string name="security_auto_reconnect_desc">استعادة اتصال VPN تلقائيًا عند الانقطاع.</string>
+    <string name="security_tracker_blocking_title">حظر أدوات التتبع</string>
+    <string name="security_tracker_blocking_desc">حظر برمجيات التتبع وملفات تعريف الارتباط.</string>
+    <string name="security_always_on_title">VPN قيد التشغيل دائمًا</string>
+    <string name="security_always_on_desc">إبقاء اتصال VPN نشطًا طوال الوقت.</string>
+    <string name="security_back_content_description">رجوع</string>
 </resources>

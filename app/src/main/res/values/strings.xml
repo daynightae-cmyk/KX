@@ -193,4 +193,26 @@
     <string name="connected_disconnect">Disconnect</string>
     <string name="connected_change_server">Change server</string>
     <string name="connected_measure_again">Measure again</string>
+
+    <!-- TASK_05 · Security Center -->
+    <string name="security_center_title">Security Center</string>
+    <string name="security_status_protected">Fully Protected</string>
+    <string name="security_status_unprotected">Protection Inactive</string>
+    <string name="security_subtitle_protected">Your connection and data are secured</string>
+    <string name="security_subtitle_unprotected">Connect to KX VPN to activate security features</string>
+    <string name="security_badge_on">On</string>
+    <string name="security_badge_off">Off</string>
+    <string name="security_kill_switch_title">Kill Switch</string>
+    <string name="security_kill_switch_desc">Blocks internet if the VPN disconnects.</string>
+    <string name="security_dns_leak_title">DNS Leak Protection</string>
+    <string name="security_dns_leak_desc">Prevents DNS requests from bypassing the VPN.</string>
+    <string name="security_ipv6_title">IPv6 Protection</string>
+    <string name="security_ipv6_desc">Stops IPv6 traffic leaks outside the VPN.</string>
+    <string name="security_auto_reconnect_title">Auto Reconnect</string>
+    <string name="security_auto_reconnect_desc">Automatically restores the VPN connection.</string>
+    <string name="security_tracker_blocking_title">Tracker Blocking</string>
+    <string name="security_tracker_blocking_desc">Blocks known trackers and profiling scripts.</string>
+    <string name="security_always_on_title">Always-On VPN</string>
+    <string name="security_always_on_desc">Keeps the VPN active at all times.</string>
+    <string name="security_back_content_description">Go back</string>
 </resources>

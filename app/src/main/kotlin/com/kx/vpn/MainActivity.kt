@@ -95,6 +95,7 @@ class MainActivity : ComponentActivity() {
                     catalogueRepository = kxApplication.endpointCatalogueRepository,
                     latencyProbe = kxApplication.latencyProbe,
                     switchController = kxApplication.endpointSwitchController,
+                    securityRepository = kxApplication.securitySettingsRepository,
                     sessionTracker = kxApplication.connectedSessionTracker,
                     networkAvailability = kxApplication.networkAvailability,
                     onConnect = ::requestConnect,
