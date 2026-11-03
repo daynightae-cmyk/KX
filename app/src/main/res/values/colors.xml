@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Sampled from assets/reference/00-brand-logo.png. See docs/evidence/TASK_00.md
+        for the probe coordinates behind each value.
+    -->
+    <color name="kx_midnight">#FF0B102C</color>
+    <color name="kx_ink">#FF171B4C</color>
+    <color name="kx_violet">#FF6537E8</color>
+    <color name="kx_orchid">#FFBE69EF</color>
+    <color name="kx_cyan">#FF5BCFFD</color>
+    <color name="kx_pearl">#FFE7EFFF</color>
+
+    <color name="kx_day_background">#FFF3F2FF</color>
+    <color name="kx_day_splash">#FFE7EFFF</color>
+    <color name="kx_night_background">#FF0B102C</color>
+    <color name="kx_night_splash">#FF05071A</color>
+
+    <color name="kx_launcher_background">#FF0B102C</color>
+</resources>
