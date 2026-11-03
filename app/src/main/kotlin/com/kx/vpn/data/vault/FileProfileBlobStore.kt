@@ -28,14 +28,7 @@ class FileProfileBlobStore(
     override fun write(id: String, bytes: ByteArray) {
         val target = fileFor(id)
         require(bytes.size <= maxBlobBytes) { "Encrypted profile exceeds storage limit" }
-        // Write to a temporary file and rename, so a crash mid-write cannot leave a
-        // half-written blob that would later be reported as a corrupt profile.
-        val temp = File(directory, "$id.tmp")
-        temp.writeBytes(bytes)
-        if (!temp.renameTo(target)) {
-            target.writeBytes(bytes)
-            temp.delete()
-        }
+        writeProfileBlobAtomically(File(directory, "$id.tmp"), target, bytes)
     }
 
     override fun read(id: String): ByteArray? {
@@ -122,5 +115,29 @@ internal fun readBoundedProfileBlob(stream: InputStream, limit: Int): ByteArray?
             if (total > limit) return null
             output.write(buffer, 0, count)
         }
+    }
+}
+
+/** No in-place fallback: a failed atomic publish leaves the previous blob untouched. */
+internal fun writeProfileBlobAtomically(
+    temp: File,
+    target: File,
+    bytes: ByteArray,
+    publish: (File, File) -> Unit = { source, destination ->
+        java.nio.file.Files.move(source.toPath(), destination.toPath(),
+            java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+            java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+    },
+) {
+    try {
+        java.io.FileOutputStream(temp).use { output ->
+            output.write(bytes)
+            output.fd.sync()
+        }
+        publish(temp, target)
+    } finally {
+        // Only our own temporary ciphertext is a cleanup target. Never truncate or
+        // delete the previous profile to make a failed replacement appear to pass.
+        if (temp.isFile) temp.delete()
     }
 }

@@ -161,4 +161,43 @@ class FileProfileBlobStoreTest {
             assertTrue(rejected)
         }
     }
+    @Test fun failedAtomicPublicationPreservesPriorBytesAndRemovesOnlyTemporaryBlob() = withRoot { root ->
+        val target = File(root, "saved.kxprofile").apply { writeBytes(byteArrayOf(1, 2, 3)) }
+        val temp = File(root, "saved.tmp")
+        val unrelated = File(root, "unrelated.txt").apply { writeText("keep") }
+        var failed = false
+        try {
+            writeProfileBlobAtomically(temp, target, byteArrayOf(9, 8)) { _, _ ->
+                throw java.nio.file.AtomicMoveNotSupportedException("source", "target", "test-only")
+            }
+        } catch (_: IOException) { failed = true }
+        assertTrue(failed)
+        assertTrue(target.readBytes().contentEquals(byteArrayOf(1, 2, 3)))
+        assertFalse(temp.exists())
+        assertEquals("keep", unrelated.readText())
+    }
+
+    @Test fun repeatedAtomicReplacementPublishesTheCompleteNewBlob() = withRoot { root ->
+        val store = FileProfileBlobStore(root)
+        store.write("saved", byteArrayOf(1, 2, 3))
+        val replacement = ByteArray(65568) { (it % 241).toByte() }
+        store.write("saved", replacement)
+        assertTrue(store.read("saved")!!.contentEquals(replacement))
+        assertFalse(File(root, "saved.tmp").exists())
+    }
+
+    @Test fun failedTemporaryWriteDoesNotModifyExistingProfile() = withRoot { root ->
+        val target = File(root, "saved.kxprofile").apply { writeText("original") }
+        val temp = File(root, "saved.tmp").apply { mkdir() }
+        val sentinel = File(temp, "keep.txt").apply { writeText("keep") }
+        var published = false
+        var failed = false
+        try {
+            writeProfileBlobAtomically(temp, target, byteArrayOf(4)) { _, _ -> published = true }
+        } catch (_: IOException) { failed = true }
+        assertTrue(failed)
+        assertFalse(published)
+        assertEquals("original", target.readText())
+        assertEquals("keep", sentinel.readText())
+    }
 }

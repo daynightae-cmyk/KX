@@ -73,3 +73,30 @@ calling those checks verified. No UI/screenshot/handshake or new roadmap task cl
 No merge, workflow edits, history rewrite, unrelated-file cleanup or other-agent
 branch changes. Original #11 work remains preserved, not force-merged into the
 independently integrated app. This follow-up is narrow data-boundary hardening.
+
+## Follow-up — no in-place write fallback
+
+Inspected #13 baseline `0dd21030a42ffb32cd8b521f556e9b6b084c7aa3`: a failed temporary
+rename fell back to `target.writeBytes(bytes)`, truncating the previous encrypted blob
+before the replacement was complete. That contradicted the comment promising crash-
+safe publication. No real data loss/crash was observed or induced; cause identified
+from the exact write path.
+
+The writer now syncs its owned temporary ciphertext then publishes via same-directory
+`Files.move(ATOMIC_MOVE, REPLACE_EXISTING)` (available on supported API26+). If the
+filesystem cannot perform atomic publication, it fails rather than overwriting the
+original in place. A finally block only attempts cleanup of its own temporary file;
+a failed write must not delete a prior profile or recurse into directories.
+
+Three additional tests bring the focused suite to **16 passed locally** (same pure
+JVM source, Kotlin2.1.20/JDK17/JUnit4.13.2). They exercise injected atomic-publication
+failure with old-byte/non-target preservation, real complete repeated replacement,
+and temporary-write failure without target modification. Test injection affects only
+the internal helper; production always calls the real NIO atomic move. Added an
+Android-device test on a unique nonsecret cache fixture to verify the actual Android
+filesystem accepts complete atomic replacement; device result pending exact-head CI.
+
+Limits: fsync covers file content, not directory power-loss durability; there is no
+hard power-cut proof or concurrent-writer/symlink/hostile same-UID guarantee. A storage
+provider without atomic replacement is intentionally rejected. No UI, import format,
+permission, dependency, workflow, transport or other-agent branch changed. No merge.
