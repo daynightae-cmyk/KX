@@ -152,4 +152,11 @@ tasks.withType<Test>().configureEach {
     testLogging {
         events("passed", "skipped", "failed")
     }
+
+    // BrandRenderTest writes PNGs into this directory. Declaring it as a task output
+    // is what makes Gradle's build cache store and restore them together with
+    // test-results. Without it a cache hit reports "33 tests passed" while the PNGs
+    // are never written, and CI's strict `if-no-files-found: error` upload step then
+    // fails — which is exactly how this gap was found.
+    outputs.dir(layout.buildDirectory.dir("kx-screenshots"))
 }

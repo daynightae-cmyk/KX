@@ -109,6 +109,7 @@ class BrandRenderTest {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         root.draw(android.graphics.Canvas(bitmap))
 
+        // Must match the directory declared as a task output in build.gradle.kts.
         val dir = File("build/kx-screenshots").apply { mkdirs() }
         val out = File(dir, "$name.png")
         FileOutputStream(out).use { stream ->
