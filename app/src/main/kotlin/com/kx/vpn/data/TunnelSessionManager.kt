@@ -88,6 +88,7 @@ class TunnelSessionManager(
     private val profileSource: () -> String? = { null },
 ) {
 
+    private val statisticsGeneration = java.util.concurrent.atomic.AtomicLong()
     private val _state = MutableStateFlow(TunnelSessionState())
     val state: StateFlow<TunnelSessionState> = _state.asStateFlow()
 
@@ -100,6 +101,7 @@ class TunnelSessionManager(
 
     /** Called after a profile is saved, removed, or the app is restored. */
     fun refreshProfilePresence() {
+        statisticsGeneration.incrementAndGet()
         val hasProfile = profileSource() != null
         _state.update { current ->
             val next = if (hasProfile) {
@@ -108,7 +110,8 @@ class TunnelSessionManager(
             } else {
                 TunnelState.UNCONFIGURED
             }
-            current.copy(hasProfile = hasProfile, tunnelState = next)
+            current.copy(hasProfile = hasProfile, tunnelState = next,
+                stats = current.stats.takeIf { next.isTunnelUp() })
         }
     }
 
@@ -162,18 +165,30 @@ class TunnelSessionManager(
 
     /** Refreshes the byte counters from the backend. Null means "no live measurement". */
     fun refreshStatistics() {
-        val current = _state.value
-        if (!current.tunnelState.isTunnelUp()) {
+        val generation = statisticsGeneration.get()
+        if (!_state.value.tunnelState.isTunnelUp()) {
             _state.update { it.copy(stats = null) }
             return
         }
-        _state.update { it.copy(stats = platform.statistics()) }
+        // Read outside StateFlow.update: update lambdas may be evaluated more than
+        // once under contention and must not repeat native/backend side effects.
+        val measured = try { platform.statistics() }
+        catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
+        catch (_: Exception) { null }
+        val valid = measured?.takeIf { it.totalRx >= 0 && it.totalTx >= 0 }
+        _state.update { current ->
+            if (generation == statisticsGeneration.get() && current.tunnelState.isTunnelUp()) {
+                current.copy(stats = valid)
+            } else current // Never attach old tunnel counters to a newer session.
+        }
     }
 
     private fun apply(transition: TunnelTransition) {
+        statisticsGeneration.incrementAndGet()
         _state.update { current ->
             current.copy(
                 tunnelState = transition.state,
+                stats = current.stats.takeIf { transition.state.isTunnelUp() && current.tunnelState.isTunnelUp() },
                 failure = transition.failure ?: current.failure.takeIf { transition.state == TunnelState.FAILED },
             )
         }
