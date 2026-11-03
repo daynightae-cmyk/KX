@@ -101,3 +101,34 @@ Recorded during TASK_01 because it changes what later tasks may claim.
 - A stronger option remains open and is not blocked by anything in the repo: build the
   tunnel library from the upstream WireGuard Go source with a committed recipe. That
   needs a Go toolchain and the Android NDK on the build machine.
+
+## TASK_03 — 2026-11-03
+
+### BLOCKER-002 still applies — no owned gateway, so switching is proven against a fake
+
+- TASK_03 needs two independently configured authorized endpoints to satisfy its own
+  acceptance test 2. There is no gateway, so there is no second real endpoint and no
+  live network to measure.
+- **What was done instead, and what it does not prove:** the switch runs against a
+  recording `TunnelPlatform` fake that answers nothing until the test tells it to. That
+  proves the *ordering* (`stop` before the new configuration is applied), the rollback,
+  and that `CONNECTED` is only reached when the platform reports the tunnel up. It does
+  **not** prove that a real peer answers, that latency measurement produces sensible
+  numbers on a real link, or that switching between two live servers behaves as modelled.
+- **Claim ban:** multi-server availability, real ping values and any statement that
+  switching "works over the network". `docs/evidence/TASK_03.md` repeats this.
+- **Safe next action:** with an owned gateway, import two configurations pointing at it
+  (or at two hosts), switch between them while connected, and capture the route, the
+  assigned DNS and the actual traffic before and after.
+
+### NOT-RUN — large system text on the server screen
+
+- Robolectric's `@Config(qualifiers = …)` does not carry a font scale, so the
+  "rotation and large text" half of acceptance test 3 is only half covered: landscape is
+  rendered (`35-servers-populated-night-640-landscape-en.png`, which is how the hidden
+  list was found), large text is not.
+- The one fixed height on the screen was changed to `heightIn(min = 54.dp)` so the search
+  field can grow, which removes the most likely clipping point. That is a mitigation, not
+  a test result.
+- **Safe next action:** render at 200% font scale on an emulator once G4 device runs are
+  extended with a `wm` font-scale step, or on a physical device.
