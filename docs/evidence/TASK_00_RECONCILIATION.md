@@ -93,3 +93,21 @@ TalkBack, genuine process-kill recovery and review/merge/post-merge checks remai
 required. Do not advance to TASK_01 on the strength of the other candidate's device
 run or a new CI job merely starting. Physical-device/release verification remains
 outstanding. Phone Repair Lab scope is recorded separately; TASK_11–21 NOT_STARTED.
+
+## Exact-SHA CI feedback and correction
+
+Run https://github.com/daynightae-cmyk/KX/actions/runs/41603415089 on
+`a70a24a4218f7a4c81d6fb141c4d0badbcfd708d` executed **44 tests: 43 passed, 1 failed**.
+The new real-DataStore sibling-sentinel cleanup regression and stored-file inspection
+both passed. All existing render tests plus the new empty-store navigation test passed.
+
+The sole failure was the new error-propagation test's `assertSame` on IOException.
+Coroutine stack-trace recovery can copy the exception across a suspension boundary.
+This was reproduced locally with the unchanged failing test using
+`java -Dkotlinx.coroutines.debug=on ... org.junit.runner.JUnitCore ...`: 8 passed,
+1 failed, `expected same IOException ... was not IOException ...` with the same message.
+It is an identity assumption in the test, not a swallowed-error bug in production.
+The test now still requires an actual thrown failure of the same class/message (never
+a degraded return value) and passes in both normal and debug/recovery-enabled local
+runs, 9/9 each. No production error handling, Lint or CI gate was relaxed. A fresh
+exact-head CI run remains required; the failed run did not reach Lint/assembly.

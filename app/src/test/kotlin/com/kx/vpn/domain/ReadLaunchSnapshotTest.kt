@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -74,7 +73,10 @@ class ReadLaunchSnapshotTest {
             readLaunchSnapshot(flow { throw expected })
             throw AssertionError("Expected upstream failure")
         } catch (actual: IOException) {
-            assertSame(expected, actual)
+            // Coroutine stack-trace recovery can copy exceptions across suspend
+            // boundaries; behavior requires the failure, not object identity.
+            assertEquals(expected.javaClass, actual.javaClass)
+            assertEquals(expected.message, actual.message)
         }
     }
 
