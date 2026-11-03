@@ -80,3 +80,10 @@ external_blockers: []
 known_gaps: []
 next_action: COMPLETE_THIS_TASK_BEFORE_NEXT
 ```
+
+## Owner-added Founder / Developer experience
+
+The About/settings scope now includes [TASK_10A](TASK_10A_founder-developer-identity.md):
+a brand-native Founder & Developer route with owner-supplied identity, grouped expertise,
+real safe contact/copy actions and native accessibility/visual/runtime evidence. This
+is a registered requirement, **NOT-IMPLEMENTED**, and does not bypass serial gates.
