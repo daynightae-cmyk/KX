@@ -77,6 +77,7 @@ class KXApplication : Application() {
     val tunnelSessionManager: TunnelSessionManager by lazy {
         TunnelSessionManager(
             platform = AndroidTunnelPlatform(this),
+            elapsedRealtimeMillis = android.os.SystemClock::elapsedRealtime,
             profileSource = { profileRepository.activeConfigText() },
         )
     }

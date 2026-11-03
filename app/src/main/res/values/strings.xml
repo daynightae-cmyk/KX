@@ -168,4 +168,5 @@
     <string name="servers_switch_failed_rollback">The switch failed and the previous endpoint could not be restored.</string>
     <string name="servers_switch_failed_unknown">No stored configuration matches that endpoint, so nothing was changed.</string>
     <string name="servers_switch_failed_busy">The tunnel is busy with another operation. Choose a server again once it settles.</string>
+    <string name="home_tunnel_duration">Tunnel active for %1$s · Internet not verified</string>
 </resources>

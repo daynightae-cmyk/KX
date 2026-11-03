@@ -50,3 +50,32 @@ traffic. Timer, rates, connected-screen polish, external reachability, TalkBack/
 comparison and physical-device acceptance are not delivered by this slice. No full
 TASK_04/TASK_05/TASK_06 completion, protection, anonymity or release claim. Keep draft
 and **unmerged**, per owner instruction. No keys/YAML uploads requested.
+
+## Follow-up — measured monotonic backend-UP duration
+
+Adds a process-local start/duration to session state. Starts only on transition into
+backend UP; connection-attempt/permission time is excluded. Production injects
+Android SystemClock.elapsedRealtime, so wall-clock changes cannot move the timer and
+elapsed time includes suspended/background intervals rather than counting UI ticks.
+Repeated UP does not reset the start. Leaving UP, profile removal, new session or
+process recreation clears it; no stale start time is persisted across reboot.
+
+Existing one-second sampler refreshes elapsed time before reading counters, so a
+missing/throwing statistics result does not freeze duration. UI renders a localized
+AR/EN line that explicitly says Internet is not verified. The label describes backend
+UP time, not handshake/reachability/anonymous browsing time. No speed/rates invented.
+
+Six new JVM cases cover start gating, missed ticks/repeated UP, disconnect/reconnect,
+missing counters/cold reconstruction, defensive backward-clock behavior and formatting
+without 24-hour wrapping/false rounding. Same manager/reducer/duration source compiled
+under standalone Kotlin2.1.20/JDK17/JUnit4.13.2/compiler coroutines1.8.0: **6 passed**;
+standalone compilation uses a temporary local boundary for the Android-service-owned
+TunnelStats data class, not a fake app dependency or Android compile pass. Added native
+UI fixture assertion for reachable duration/no-Internet-verified wording; it does not
+connect a tunnel or convert fixture data into production evidence.
+
+XML/diff checks passed. Full automatic exact-head Android CI is pending for this
+follow-up. Full connected-screen/reference visuals, real controlled-transfer counter
+proof, owned gateway handshake/routes/DNS/leaks and physical hardware remain unverified.
+No new gateway, permissions, dependencies, workflows, provider or other-agent branch
+changes. No merge. TASK_04 is still PARTIAL, not a delivered five-task roadmap.

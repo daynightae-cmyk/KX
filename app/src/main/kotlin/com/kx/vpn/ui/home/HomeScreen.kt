@@ -107,6 +107,16 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(KXDimens.SpaceMd))
 
+        session.elapsedMillis?.let { elapsed ->
+            Text(
+                text = stringResource(R.string.home_tunnel_duration,
+                    com.kx.vpn.domain.tunnel.formatSessionDuration(elapsed)),
+                style = KXTypography.Body.copy(color = glass.textPrimary),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.height(KXDimens.SpaceMd))
+        }
         MetricGrid(session)
 
         Spacer(modifier = Modifier.height(KXDimens.SpaceXl))

@@ -57,6 +57,9 @@ data class TunnelSessionState(
     val stats: TunnelStats? = null,
     val hasProfile: Boolean = false,
     val backendVersion: String? = null,
+    /** Process-local monotonic timestamps; never persisted or treated as Internet proof. */
+    val startedAtElapsedMillis: Long? = null,
+    val elapsedMillis: Long? = null,
 ) {
     /** The connect button is live only when a profile exists and nothing is running. */
     val canConnect: Boolean get() = hasProfile && tunnelState.canInitiateConnect()
@@ -85,6 +88,7 @@ data class TunnelSessionState(
  */
 class TunnelSessionManager(
     private val platform: TunnelPlatform,
+    private val elapsedRealtimeMillis: () -> Long = { System.nanoTime() / 1_000_000L },
     private val profileSource: () -> String? = { null },
 ) {
 
@@ -111,7 +115,9 @@ class TunnelSessionManager(
                 TunnelState.UNCONFIGURED
             }
             current.copy(hasProfile = hasProfile, tunnelState = next,
-                stats = current.stats.takeIf { next.isTunnelUp() })
+                stats = current.stats.takeIf { next.isTunnelUp() },
+                startedAtElapsedMillis = current.startedAtElapsedMillis.takeIf { next.isTunnelUp() },
+                elapsedMillis = current.elapsedMillis.takeIf { next.isTunnelUp() })
         }
     }
 
@@ -165,6 +171,7 @@ class TunnelSessionManager(
 
     /** Refreshes the byte counters from the backend. Null means "no live measurement". */
     fun refreshStatistics() {
+        refreshElapsedTime()
         val generation = statisticsGeneration.get()
         if (!_state.value.tunnelState.isTunnelUp()) {
             _state.update { it.copy(stats = null) }
@@ -183,11 +190,36 @@ class TunnelSessionManager(
         }
     }
 
+    /** UI refresh rate is not the clock: missed ticks/background time are measured. */
+    fun refreshElapsedTime() {
+        val now = elapsedRealtimeMillis()
+        _state.update { current ->
+            val start = current.startedAtElapsedMillis
+            if (!current.isTunnelUp || start == null) current
+            else {
+                val duration = if (now >= start) now - start else 0L
+                current.copy(elapsedMillis = maxOf(current.elapsedMillis ?: 0L, duration))
+            }
+        }
+    }
+
     private fun apply(transition: TunnelTransition) {
         statisticsGeneration.incrementAndGet()
+        val now = elapsedRealtimeMillis()
         _state.update { current ->
+            val remainsUp = transition.state.isTunnelUp() && current.isTunnelUp
             current.copy(
                 tunnelState = transition.state,
+                startedAtElapsedMillis = when {
+                    !transition.state.isTunnelUp() -> null
+                    remainsUp -> current.startedAtElapsedMillis
+                    else -> now
+                },
+                elapsedMillis = when {
+                    !transition.state.isTunnelUp() -> null
+                    remainsUp -> current.elapsedMillis
+                    else -> 0L
+                },
                 stats = current.stats.takeIf { transition.state.isTunnelUp() && current.tunnelState.isTunnelUp() },
                 failure = transition.failure ?: current.failure.takeIf { transition.state == TunnelState.FAILED },
             )
