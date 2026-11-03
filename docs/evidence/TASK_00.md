@@ -359,9 +359,28 @@ HEAD == origin/main == 98e6e46cb5d21c4933bc47e949a0a122a16f25a8
 One correction worth recording: the first post-merge run reported 33 passing while
 writing **no** screenshots. `org.gradle.caching=true` meant Gradle restored
 `test-results` **FROM-CACHE** instead of re-executing, because the screenshot directory
-is not a declared task output. The numbers were real but stale. The run above uses
+was not a declared task output. The numbers were real but stale. The run above uses
 `--rerun-tasks` and is a genuine execution. A green "up-to-date" Gradle result is not
 proof that anything ran.
+
+### Follow-up: the cache gap was a real defect, fixed in PR #3
+
+The same root cause then failed CI on the evidence-docs push (run `41601759675`):
+`Upload rendered screenshots` found no files, because on a cache hit Gradle restores
+only declared outputs. The strict `if-no-files-found: error` turned a missing-evidence
+condition into a loud failure instead of a green build with nothing to show — the gate
+behaving as designed.
+
+Fixed in PR #3 (`4129256`) by declaring the directory on the `Test` tasks:
+
+```kotlin
+outputs.dir(layout.buildDirectory.dir("kx-screenshots"))
+```
+
+Verified by running the suite, deleting the PNG directory, and running again: the task
+reports `FROM-CACHE` and all 10 renders are restored. CI on PR #3 uploaded the artifact
+(2,420,698 bytes) and `main` is green at `a692ff4dd86a53e82bd67e7c73ab26f5d564f9db`
+(run `41603418054`).
 
 ## Status
 
