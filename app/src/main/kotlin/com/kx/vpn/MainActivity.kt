@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
                 KXNavHost(
                     navController = navController,
                     launchViewModel = launchViewModel,
+                    repository = (application as KXApplication).launchStateRepository,
                     modifier = Modifier.fillMaxSize(),
                 )
             }

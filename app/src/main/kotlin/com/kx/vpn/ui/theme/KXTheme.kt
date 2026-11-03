@@ -36,6 +36,13 @@ data class KXGlassScheme(
     val rimStops: List<Color>,
     val nodeColors: List<Color>,
     val wordmarkBrush: Brush,
+    /**
+     * Corner depth for the atmospheric backdrop. Night uses a near-black navy; day must
+     * NOT, because 40% black over the pale lilac surface mixes into a grey smudge — the
+     * exact defect the first API 35 device screenshot showed. Day deepens toward violet
+     * instead, which reads as shadow without going muddy.
+     */
+    val atmosphereVignette: Color,
 ) {
     val glassFillBrush: Brush
         get() = Brush.linearGradient(listOf(glassTop, glassBottom))
@@ -75,6 +82,7 @@ private val NightGlass = KXGlassScheme(
     wordmarkBrush = Brush.linearGradient(
         listOf(KXPalette.WordmarkInk, KXPalette.Violet, KXPalette.Cyan),
     ),
+    atmosphereVignette = Color(0x70050A24),
 )
 
 private val DayGlass = KXGlassScheme(
@@ -107,6 +115,7 @@ private val DayGlass = KXGlassScheme(
     wordmarkBrush = Brush.linearGradient(
         listOf(KXPalette.WordmarkInk, KXPalette.Violet, Color(0xFF2F8FD8)),
     ),
+    atmosphereVignette = Color(0x336537E8),
 )
 
 val LocalKXGlass: ProvidableCompositionLocal<KXGlassScheme> =

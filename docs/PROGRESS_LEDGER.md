@@ -9,7 +9,7 @@ below records only what has primary evidence, and each task's full evidence live
 | Task | Status | Implementation SHA | PR | Merge SHA | Test/device proof |
 | --- | --- | --- | --- | --- | --- |
 | TASK_00 | MERGED_VERIFIED (limited scope, see note) | `9278d72fb6bce645f7df22bab4504cbd174f5ad4` | [#1](https://github.com/daynightae-cmyk/KX/pull/1) | `98e6e46cb5d21c4933bc47e949a0a122a16f25a8` | 33/33 JVM tests re-executed on `main` with `--rerun-tasks`; lint clean; `assembleDebug` + `assembleDebugAndroidTest` green; CI success on both the PR SHA (run 41599482673) and the merge SHA (run 41600267115); 10 Compose renders in `docs/evidence/TASK_00/`. **DEVICE_UNVERIFIED** — no emulator/device (BLOCKER-001). |
-| TASK_01 | NOT_STARTED | none | none | none | NOT_RUN |
+| TASK_01 | PR_OPEN | pending | pending | pending | 93/93 JVM tests, lint clean, both APKs built, 9 new Compose renders. Instrumented suite rewritten for the real first-run routes and executed by the device-runtime workflow on emulator API 26/35. |
 | TASK_02 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_03 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_04 | NOT_STARTED | none | none | none | NOT_RUN |

@@ -40,3 +40,23 @@ For every new blocker append: task, service, failing command/error, exact scope 
 - **Robolectric + Windows home directory containing a space** (`C:\Users\day night`). Robolectric builds its Maven repository path from `user.home`, URL-encodes the space and never decodes it, so it fails with `NoSuchFileException: C:\Users\day%20night\.m2\…` before any test body runs. Worked around by giving the test JVM a space-free `user.home` at `.robolectric-home/` (gitignored), applied only when the real home contains a space, so CI on Linux is unaffected. This is a local environment defect, not a project one.
 - **`assets/reference/reference.rar`** appeared in the working tree during TASK_00. It was not created by this task, is not referenced by `docs/ASSET_MANIFEST.md`, and has been left untouched and uncommitted. Owner may want to confirm its origin.
 
+
+
+### UPDATE to BLOCKER-001 — device runtime is now available on CI, not locally
+
+Recorded during TASK_01 because it changes what later tasks may claim.
+
+- **Still true:** this machine has no emulator (`D:/Android/sdk` has no `emulator/` or
+  `system-images/`), no running hypervisor, and enabling one needs elevation. Local
+  `connectedAndroidTest` remains impossible.
+- **No longer true:** device runtime verification is unavailable. PR #7 added
+  `.github/workflows/kx-device-runtime.yml`, which runs the instrumented suite on
+  emulator **API 26 and API 35** (`pixel_2`, `google_apis`, x86_64, KVM) for every PR and
+  every merge to main, and collects real framebuffer screenshots via
+  `uiAutomation.takeScreenshot()`.
+- **Consequence for G4:** tasks should report the CI emulator result as the runtime
+  evidence and stop defaulting to `DEVICE_UNVERIFIED` without checking. `DEVICE_UNVERIFIED`
+  now means specifically *no physical device*, which remains true.
+- **Still blocked and unchanged:** a physical Android device, and any real VPN transport
+  proof (no gateway is provisioned), so G5 network claims remain blocked until an owned
+  endpoint exists.
