@@ -20,3 +20,6 @@ One full-stack task, one visual reference, one reviewed PR and verified merge at
 A minimal secure configuration handoff may be implemented under Task 02 to demonstrate real session control; the rich import UI and hostile-import handling are expanded in Task 09, not duplicated.
 
 Lifecycle: Reality → protect unique work → exact image QA → native UI+service+data → tests → emulator/device runtime → security/network proof → PR/CI → merge main → post-merge SHA + ledger → next task.
+
+## Nonstop handling for optional third-party dependencies
+Avoid getting stuck on external keys/providers. Defer an *optional external* capability into `docs/BLOCKERS.md`, disable unsupported UI, and merge the demonstrably complete **provider-independent scoped deliverable** only after all of its gates pass. Then take the next task. This is permitted by the owner; it does not mean the missing provider feature passed, and does not remove genuine core VPN/traffic verification. If the core essential slice fails, do not falsely merge it simply to advance the counter.

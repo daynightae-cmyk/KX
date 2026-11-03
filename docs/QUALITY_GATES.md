@@ -11,3 +11,6 @@ G7 **Handoff**: `docs/evidence/TASK_XX.md`, screenshots, ledger updated, blocker
 
 Evidence fields: BASE_SHA / IMPLEMENTATION_SHA / PR / MERGE_SHA / ORIGIN_MAIN_SHA / FILES / TEST_COMMANDS_AND_RESULTS / DEVICE_EMULATOR / VISUAL_DIFF / ACTUAL_SERVICE / NETWORK_PROOF / SECURITY_PROOF / BLOCKERS / STATUS / NEXT_ACTION.
 No “100%”, PASS, RELEASED or COMPLETE based on build success, images, or another agent's summary.
+
+## When optional external services are unavailable
+Use `DEFERRED_EXTERNAL` for an unavailable **optional** external subfeature only. Test and merge the real provider-free scope with explicit exclusions, never claim the deferred subfeature works, then continue the queue. An unavailable externally hosted fleet is **not** a reason to stop building a WireGuard-config-based VPN client. Core Android tunnel/network functionality still requires controlled-gateway proof before being marked verified.
