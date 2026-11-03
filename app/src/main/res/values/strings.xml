@@ -196,10 +196,33 @@
 
     <!-- TASK_05 · Security Center -->
     <string name="security_center_title">Security Center</string>
-    <string name="security_status_protected">Fully Protected</string>
-    <string name="security_status_unprotected">Protection Inactive</string>
-    <string name="security_subtitle_protected">Your connection and data are secured</string>
-    <string name="security_subtitle_unprotected">Connect to KX VPN to activate security features</string>
+    <!--
+      TASK_05 status wording. The reference artwork asserts complete safety in its hero
+      card. That claim is not available to this build: what it can know is that the backend
+      reported the tunnel interface up, and it has never verified that traffic leaves
+      through the tunnel or that nothing leaks around it. docs/SECURITY_MODEL.md requires
+      "VPN UP" and "Internet Verified" to stay distinct.
+      The old keys that made the safety claim are removed rather than left unused, so no
+      string in the APK can assert protection, and SecurityHonestyTest fails if one is
+      added back.
+    -->
+    <string name="security_status_tunnel_up">Tunnel interface is up</string>
+    <string name="security_status_not_connected">Not connected</string>
+    <string name="security_subtitle_not_verified">Traffic and leaks have not been verified</string>
+    <string name="security_subtitle_down">Connect to KX to start the tunnel</string>
+
+    <!--
+      Per-control truth. Each note says what the switch actually does in this build, and
+      the three the build does not honour are shown disabled rather than as working
+      switches. Same rule as the Streaming/Gaming chips on the server screen.
+    -->
+    <string name="security_badge_not_enforced">Not yet enforced</string>
+    <string name="security_note_kill_switch">Not built yet. Saving this changes nothing.</string>
+    <string name="security_note_ipv6">Not built yet. No IPv6 routes exist in this build.</string>
+    <string name="security_note_auto_reconnect">Not built yet. KX reconnects regardless of this switch.</string>
+    <string name="security_note_dns_leak">When on, replaces your DNS with %1$s.</string>
+    <string name="security_note_tracker">When on, points your DNS at %1$s, a third party.</string>
+    <string name="security_note_always_on">Opens Android\'s VPN settings, where the system grants it.</string>
     <string name="security_badge_on">On</string>
     <string name="security_badge_off">Off</string>
     <string name="security_kill_switch_title">Kill Switch</string>
@@ -215,4 +238,15 @@
     <string name="security_always_on_title">Always-On VPN</string>
     <string name="security_always_on_desc">Keeps the VPN active at all times.</string>
     <string name="security_back_content_description">Go back</string>
+
+    <!-- TASK_06 · Split Tunneling -->
+    <string name="split_tunneling_title">Split Tunneling</string>
+    <string name="split_tunneling_info_title">Choose which apps use the VPN and which bypass it.</string>
+    <string name="split_tunneling_info_desc">Route specific apps through KX for privacy, and let others connect directly for speed.</string>
+    <string name="split_tunneling_mode_bypass">Bypass VPN</string>
+    <string name="split_tunneling_mode_only_vpn">Only through VPN</string>
+    <string name="split_tunneling_search_placeholder">Search apps</string>
+    <string name="split_tunneling_status_apps">%1 apps</string>
+    <string name="split_tunneling_status_through_vpn">%1 through VPN</string>
+    <string name="split_tunneling_status_bypassing">%1 bypassing</string>
 </resources>

@@ -12,13 +12,22 @@ import kotlinx.coroutines.flow.map
  *
  * Defaults to true per the reference design (05-security-center.png) where all
  * security protections are active out-of-the-box.
+ *
+ * The defaults below no longer say that. `dnsLeakProtection` and `trackerBlocking` are
+ * the two switches that reach the tunnel, and what they do is replace the `DNS` line in
+ * the user's own configuration with a hardcoded public resolver. Doing that on a first
+ * run the user never chose is a change to their infrastructure, so both default to off
+ * and only take effect when the user turns them on after reading what they do.
+ *
+ * The remaining three are persisted but nothing reads them; the security screen shows them
+ * disabled with that reason rather than as working switches.
  */
 data class SecuritySettings(
     val killSwitch: Boolean = true,
-    val dnsLeakProtection: Boolean = true,
+    val dnsLeakProtection: Boolean = false,
     val ipv6Protection: Boolean = true,
     val autoReconnect: Boolean = true,
-    val trackerBlocking: Boolean = true,
+    val trackerBlocking: Boolean = false,
     val alwaysOnVpn: Boolean = true,
 )
 
@@ -48,10 +57,12 @@ class PreferencesSecuritySettingsRepository(
     override val settings: Flow<SecuritySettings> = dataStore.data.map { prefs ->
         SecuritySettings(
             killSwitch = prefs[Keys.KILL_SWITCH] ?: true,
-            dnsLeakProtection = prefs[Keys.DNS_LEAK] ?: true,
+            // Must agree with the defaults on SecuritySettings: a key that was never
+            // written is not the same thing as a key the user turned on.
+            dnsLeakProtection = prefs[Keys.DNS_LEAK] ?: false,
             ipv6Protection = prefs[Keys.IPV6] ?: true,
             autoReconnect = prefs[Keys.AUTO_RECONNECT] ?: true,
-            trackerBlocking = prefs[Keys.TRACKER_BLOCKING] ?: true,
+            trackerBlocking = prefs[Keys.TRACKER_BLOCKING] ?: false,
             alwaysOnVpn = prefs[Keys.ALWAYS_ON] ?: true,
         )
     }

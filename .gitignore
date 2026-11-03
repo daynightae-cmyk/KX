@@ -29,3 +29,7 @@ Thumbs.db
 
 *.pdf
 *.zip
+
+# Local-only artifacts from this session: the preview folder and Python bytecode.
+/preview/
+tools/__pycache__/

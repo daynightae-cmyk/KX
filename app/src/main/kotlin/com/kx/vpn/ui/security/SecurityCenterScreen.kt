@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kx.vpn.R
 import com.kx.vpn.data.SecuritySettings
+import com.kx.vpn.domain.security.SecurityControlKey
+import com.kx.vpn.domain.security.SecurityEnforcement
 import com.kx.vpn.ui.brand.GlassCard
 import com.kx.vpn.ui.brand.GlassCircle
 import com.kx.vpn.ui.brand.KXAtmosphericBackground
@@ -111,6 +113,8 @@ fun SecurityCenterScreen(
                     iconRes = R.drawable.ic_kx_power,
                     titleRes = R.string.security_kill_switch_title,
                     descRes = R.string.security_kill_switch_desc,
+                    key = SecurityControlKey.KILL_SWITCH,
+                    note = stringResource(R.string.security_note_kill_switch),
                     checked = settings.killSwitch,
                     onCheckedChange = onToggleKillSwitch,
                 )
@@ -119,6 +123,8 @@ fun SecurityCenterScreen(
                     iconRes = R.drawable.ic_kx_dns,
                     titleRes = R.string.security_dns_leak_title,
                     descRes = R.string.security_dns_leak_desc,
+                    key = SecurityControlKey.DNS_LEAK_PROTECTION,
+                    note = stringResource(R.string.security_note_dns_leak, SecurityEnforcement.DNS_LEAK_RESOLVERS),
                     checked = settings.dnsLeakProtection,
                     onCheckedChange = onToggleDnsLeakProtection,
                 )
@@ -127,6 +133,8 @@ fun SecurityCenterScreen(
                     iconRes = R.drawable.ic_kx_ipv6,
                     titleRes = R.string.security_ipv6_title,
                     descRes = R.string.security_ipv6_desc,
+                    key = SecurityControlKey.IPV6_PROTECTION,
+                    note = stringResource(R.string.security_note_ipv6),
                     checked = settings.ipv6Protection,
                     onCheckedChange = onToggleIpv6Protection,
                 )
@@ -135,6 +143,8 @@ fun SecurityCenterScreen(
                     iconRes = R.drawable.ic_kx_auto_reconnect,
                     titleRes = R.string.security_auto_reconnect_title,
                     descRes = R.string.security_auto_reconnect_desc,
+                    key = SecurityControlKey.AUTO_RECONNECT,
+                    note = stringResource(R.string.security_note_auto_reconnect),
                     checked = settings.autoReconnect,
                     onCheckedChange = onToggleAutoReconnect,
                 )
@@ -143,6 +153,8 @@ fun SecurityCenterScreen(
                     iconRes = R.drawable.ic_kx_tracker,
                     titleRes = R.string.security_tracker_blocking_title,
                     descRes = R.string.security_tracker_blocking_desc,
+                    key = SecurityControlKey.TRACKER_BLOCKING,
+                    note = stringResource(R.string.security_note_tracker, SecurityEnforcement.TRACKER_RESOLVERS),
                     checked = settings.trackerBlocking,
                     onCheckedChange = onToggleTrackerBlocking,
                 )
@@ -151,6 +163,8 @@ fun SecurityCenterScreen(
                     iconRes = R.drawable.ic_kx_infinity,
                     titleRes = R.string.security_always_on_title,
                     descRes = R.string.security_always_on_desc,
+                    key = SecurityControlKey.ALWAYS_ON_VPN,
+                    note = stringResource(R.string.security_note_always_on),
                     checked = settings.alwaysOnVpn,
                     onCheckedChange = { checked ->
                         onToggleAlwaysOnVpn(checked)
@@ -176,15 +190,21 @@ private fun SecurityHeroCard(
     modifier: Modifier = Modifier,
 ) {
     val glass = LocalKXGlass.current
+    // The reference artwork says "Fully Protected / Your connection and data are secured".
+    // This build cannot support that sentence: what it knows is that the backend reported
+    // the tunnel interface up. Whether traffic actually leaves through the tunnel, and
+    // whether anything leaks around it, has not been verified — docs/SECURITY_MODEL.md
+    // requires "VPN UP" and "Internet Verified" to stay distinct, so the card states the
+    // first and says plainly that the second is missing.
     val statusText = if (isTunnelUp) {
-        stringResource(R.string.security_status_protected)
+        stringResource(R.string.security_status_tunnel_up)
     } else {
-        stringResource(R.string.security_status_unprotected)
+        stringResource(R.string.security_status_not_connected)
     }
     val subtitleText = if (isTunnelUp) {
-        stringResource(R.string.security_subtitle_protected)
+        stringResource(R.string.security_subtitle_not_verified)
     } else {
-        stringResource(R.string.security_subtitle_unprotected)
+        stringResource(R.string.security_subtitle_down)
     }
 
     GlassCard(
@@ -259,24 +279,39 @@ private fun SecurityToggleRow(
     @DrawableRes iconRes: Int,
     @StringRes titleRes: Int,
     @StringRes descRes: Int,
+    key: SecurityControlKey,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    note: String? = null,
     modifier: Modifier = Modifier,
 ) {
     val glass = LocalKXGlass.current
     val title = stringResource(titleRes)
     val desc = stringResource(descRes)
-    val badgeText = if (checked) {
-        stringResource(R.string.security_badge_on)
-    } else {
-        stringResource(R.string.security_badge_off)
+    // A control the build does not honour is not merely labelled: it is not operable.
+    // Tapping a switch that saves a value nobody reads teaches the user that security
+    // settings are decoration, which is worse than admitting the feature is not built.
+    // The table in the domain is the only place that decides this; the screen
+    // asks it rather than repeating an answer that could drift out of date.
+    val enforcement = SecurityEnforcement.of(key)
+    val operable = SecurityEnforcement.isOperable(key)
+    val badgeText = when {
+        !operable -> stringResource(R.string.security_badge_not_enforced)
+        checked -> stringResource(R.string.security_badge_on)
+        else -> stringResource(R.string.security_badge_off)
+    }
+    val spoken = buildString {
+        append(title); append(". ")
+        append(badgeText); append(". ")
+        append(desc)
+        if (note != null) { append(". "); append(note) }
     }
 
     GlassCard(
         modifier = modifier
             .fillMaxWidth()
             .semantics {
-                contentDescription = "$title. $badgeText. $desc"
+                contentDescription = spoken
             },
         cornerRadius = 18.dp,
         contentPadding = 12.dp,
@@ -318,16 +353,26 @@ private fun SecurityToggleRow(
                         modifier = Modifier
                             .clip(RoundedCornerShape(percent = 50))
                             .background(
-                                if (checked) Color(0x2610B981) else Color(0x1A000000),
+                                // Green means "this is happening". A control that is not
+                                // honoured never gets it, whatever the stored value says.
+                                when {
+                                    !operable -> Color(0x1A000000)
+                                    checked -> Color(0x2610B981)
+                                    else -> Color(0x1A000000)
+                                },
                                 RoundedCornerShape(percent = 50),
                             )
                             .padding(horizontal = 6.dp, vertical = 2.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = if (checked) "✓ $badgeText" else badgeText,
+                            text = if (operable && checked) "✓ $badgeText" else badgeText,
                             style = KXTypography.Caption.copy(
-                                color = if (checked) Color(0xFF10B981) else glass.textSecondary,
+                                color = if (operable && checked) {
+                                    Color(0xFF10B981)
+                                } else {
+                                    glass.textSecondary
+                                },
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 10.sp,
                             ),
@@ -345,13 +390,27 @@ private fun SecurityToggleRow(
                     ),
                     maxLines = 2,
                 )
+
+                // The disclosure line is where the truth about the control goes: what it
+                // actually changes, or why it cannot be switched yet.
+                if (note != null) {
+                    Text(
+                        text = note,
+                        style = KXTypography.Caption.copy(
+                            color = if (operable) glass.textSecondary else KXPalette.NeutralHint,
+                            fontSize = 11.sp,
+                        ),
+                        maxLines = 2,
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(8.dp))
 
             KXSwitch(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
+                checked = checked && operable,
+                onCheckedChange = if (operable) onCheckedChange else null,
+                enabled = operable,
             )
         }
     }
