@@ -39,8 +39,9 @@ class FileProfileBlobStore(
     }
 
     override fun delete(id: String) {
-        fileFor(id).delete()
-        File(directory, "$id.tmp").delete()
+        val target = fileFor(id) // Validate before either mutation.
+        deleteOwnedFile(target)
+        deleteOwnedFile(File(directory, "$id.tmp"))
     }
 
     override fun list(): List<String> = runCatching {
@@ -51,12 +52,32 @@ class FileProfileBlobStore(
     }.getOrDefault(emptyList())
 
     override fun clearAll() {
-        runCatching { directory.listFiles()?.forEach { it.delete() } }
+        val files = directory.listFiles()
+            ?: throw java.io.IOException("Profile directory cannot be inspected")
+        files.filter { file ->
+            val id = when {
+                file.name.endsWith(EXTENSION) -> file.name.removeSuffix(EXTENSION)
+                file.name.endsWith(".tmp") -> file.name.removeSuffix(".tmp")
+                else -> return@filter false
+            }
+            ID_PATTERN.matches(id)
+        }.forEach(::deleteOwnedFile)
     }
 
-    private fun fileFor(id: String) = File(directory, "$id$EXTENSION")
+    private fun deleteOwnedFile(file: File) {
+        if (!file.exists()) return
+        if (!file.isFile || !file.delete() || file.exists()) {
+            throw java.io.IOException("Profile removal unconfirmed")
+        }
+    }
+
+    private fun fileFor(id: String): File {
+        require(ID_PATTERN.matches(id)) { "Invalid profile id" }
+        return File(directory, "$id$EXTENSION")
+    }
 
     private companion object {
         const val EXTENSION = ".kxprofile"
+        val ID_PATTERN = Regex("^[A-Za-z0-9_-]{1,64}$")
     }
 }
