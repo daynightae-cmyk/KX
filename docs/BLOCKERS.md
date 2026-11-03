@@ -10,3 +10,14 @@
 | Marketing “Premium”, “Unlimited”, “No logs” | Unsubstantiated | Hide | No misleading product guarantees |
 
 For every new blocker append: task, service, failing command/error, exact scope affected, fallback implemented, what cannot be verified, safe next action. Continue working on independent subcomponents but **never falsely close or merge unfinished acceptance scope**.
+
+## TASK_00 — observed build/runtime blockers (2026-11-03)
+
+- **Android dependency resolution — BLOCKED:** `gradle --no-daemon testDebugUnitTest lintDebug assembleDebug` stopped before compilation: Kotlin Android plugin 2.1.20 could not resolve. Maven Central and Gradle Plugin Portal endpoint probes failed DNS resolution (`curl (6) Could not resolve host`). Java/SDK/Gradle were successfully installed; no registry authentication was changed. Fallback: run the same startup-domain unit sources with a standalone compiler (9 pass; coroutines 1.8.0, not the app-pinned 1.10.2). This does not validate the Android build. Next: exact-SHA GitHub CI using the normal public repositories.
+- **Runtime/visual gates — NOT_VERIFIED:** no compiled APK, no device run, and local `/dev/kvm` absent. CI emulator jobs and screenshot tests are provided, not claimed successful. No AR/EN/theme/size/TalkBack/process-death proof yet. Keep this PR draft; do not advance TASK_01 before acceptance/integration.
+- **Physical Android device — DEVICE_UNVERIFIED:** release still requires real-device validation.
+- No provider key is required for the current launch-only task. No user secret is requested. Global servers, transport and onboarding remain outside this task, not falsely delivered.
+
+- **CI activation — BLOCKED:** GitHub publisher rejected `.github/workflows/android.yml` with `workflow_file_not_allowed` (HTTP 403); it explicitly confirmed nothing published. The managed publisher lacks workflows permission and cannot be repaired by changing the app installation. Recovery: keep the executable workflow as inert `docs/ci/android.yml.example` and publish all normal app/test/evidence changes as a draft. Owner must add the supplied template as `.github/workflows/android.yml` before CI can run. No user token is requested.
+
+- **Separate Vercel deployment status (observed, outside Android scope):** published implementation commit has Vercel status `failure` / `Account is blocked.` This is not an Android build result. No web deployment or billing changes attempted. The draft remains unmerged and TASK_01 remains NOT_STARTED.

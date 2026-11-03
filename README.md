@@ -1,6 +1,6 @@
 # KX VPN — KNOUX Private Network
 
-**Repository state (2026-11-03):** planning, brand references and executable agent task specifications. **No functional VPN app, APK, configured gateway, tested network or released service is claimed by this setup.**
+**Development branch state (2026-11-03):** TASK_00 native Android launch foundation implemented as an unverified candidate. Android build/device/visual gates remain blocked or unverified; see [task evidence](docs/evidence/TASK_00.md). **No functional VPN, verified APK, configured gateway, tested network or released service is claimed.**
 
 ## Purpose
 Build a genuine native Android VPN client in Kotlin + Jetpack Compose based on the supplied KX circular glass-orbit identity. Work strictly in production-quality, verified vertical slices. A provider-free path (user-owned WireGuard endpoint/imported config) is the initial transport target; global exit servers are **not free by definition**.
@@ -17,3 +17,15 @@ Images are references, not UI screenshots or assets to paste as full-screen back
 **Suggested baseline:** Kotlin, Android SDK, Jetpack Compose / Material 3, Coroutines, StateFlow, Room/DataStore as needed, Android VpnService + audited WireGuard tunnel library. Do not assert unsupported protocols until implemented and tested.
 
 Links: https://developer.android.com/develop/connectivity/vpn | https://github.com/WireGuard/wireguard-android
+
+## Android development (TASK_00 candidate)
+
+Use Java 17 and Android SDK 35 / build tools 35.0.0. Set `ANDROID_HOME` locally (never commit `local.properties`).
+
+```sh
+./gradlew testDebugUnitTest lintDebug assembleDebug
+# With an API 26+ emulator/device connected:
+./gradlew connectedDebugAndroidTest
+```
+
+The launch route only reads local first-run preferences, shows the native brand and explains the development build. It cannot connect a VPN or accept onboarding yet. The CI template at `docs/ci/android.yml.example` must be installed by the owner as `.github/workflows/android.yml`; it then captures screenshots as artifacts; test scaffolding is not verification. Keep TASK_01 blocked until TASK_00 gates and integration are actually verified.

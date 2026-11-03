@@ -1,10 +1,10 @@
 # KX VPN — immutable evidence-based progress ledger
 
-As of initial planning commit, **all implementation tasks NOT_STARTED**. This repository only contains reference PNGs and task documents. No code, tests, CI, gateway, APK or production release was created as part of this setup.
+The initial planning commit contained only references/documents. This isolated branch adds a TASK_00 implementation candidate and tests/CI definitions. It is **not** a completed task, verified APK or VPN service. TASK_01–10 remain NOT_STARTED. See [primary evidence](evidence/TASK_00.md).
 
 | Task | Status | Implementation SHA | PR | Merge SHA | Test/device proof |
 | --- | --- | --- | --- | --- | --- |
-| TASK_00 | NOT_STARTED | none | none | none | NOT_RUN |
+| TASK_00 | PR_OPEN (draft), acceptance BLOCKED | `27e4673238bc0a77bde95e268001611d76168682` | [#2](https://github.com/daynightae-cmyk/KX/pull/2) | none | 9 standalone domain tests passed; Android build/device/visual NOT_VERIFIED |
 | TASK_01 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_02 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_03 | NOT_STARTED | none | none | none | NOT_RUN |
