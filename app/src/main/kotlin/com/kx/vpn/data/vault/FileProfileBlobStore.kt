@@ -138,6 +138,8 @@ internal fun writeProfileBlobAtomically(
     } finally {
         // Only our own temporary ciphertext is a cleanup target. Never truncate or
         // delete the previous profile to make a failed replacement appear to pass.
-        if (temp.isFile) temp.delete()
+        if (temp.isFile && !temp.delete() && temp.exists()) {
+            throw IOException("Temporary encrypted profile removal unconfirmed")
+        }
     }
 }
