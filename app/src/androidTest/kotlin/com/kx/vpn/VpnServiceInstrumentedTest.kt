@@ -156,22 +156,39 @@ class VpnServiceInstrumentedTest {
         assertEquals(TunnelState.UNCONFIGURED, manager.state.value.tunnelState)
     }
 
+    /**
+     * The profile has to disappear while the session is genuinely waiting, which is
+     * what happens when the platform asks for consent. A platform that grants consent
+     * immediately starts the tunnel straight away, so there is no window in which the
+     * profile could vanish — a first version of this test asserted against that
+     * platform and failed on the emulator.
+     */
     @Test
-    fun aProfileThatIsRemovedBeforeTheStartIsRefused() {
-        val platform = RecordingPlatform()
+    fun aProfileThatIsRemovedWhileWaitingForConsentIsRefused() {
+        val platform = RecordingPlatform(consentRequired = true)
         var profile: String? = "config"
         val manager = TunnelSessionManager(platform, profileSource = { profile })
 
         manager.connect()
+        assertEquals(TunnelState.AWAITING_PERMISSION, manager.state.value.tunnelState)
+
         profile = null
         manager.onPermissionGranted()
 
-        assertEquals(0, platform.startCalls)
+        assertEquals("no tunnel may start without a configuration", 0, platform.startCalls)
+        assertEquals(
+            "the refusal must be reported as a failure, not silently ignored",
+            com.kx.vpn.domain.tunnel.FailureReason.InvalidConfiguration,
+            manager.state.value.failure,
+        )
     }
 
-    private class RecordingPlatform : TunnelPlatform {
+    private class RecordingPlatform(
+        private val consentRequired: Boolean = false,
+    ) : TunnelPlatform {
         var startCalls = 0
-        override fun requestConsent(): ConsentRequest = ConsentRequest.NotRequired
+        override fun requestConsent(): ConsentRequest =
+            if (consentRequired) ConsentRequest.Required("req") else ConsentRequest.NotRequired
         override fun startTunnel(configText: String) { startCalls++ }
         override fun stopTunnel() = Unit
         override fun isTunnelUp(): Boolean = false
