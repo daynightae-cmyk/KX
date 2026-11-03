@@ -1,0 +1,90 @@
+name: KX Android Device Runtime
+
+# Once merged into main, this workflow applies to every PR targeting main.
+# Do NOT copy it to individual task branches.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kx-device-${{ github.workflow }-${{ github.ref }
+  cancel-in-progress: true
+
+jobs:
+  emulator:
+    name: Android emulator API ${{ matrix.api }
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [26, 35]
+    steps:
+      - name: Checkout PR merge SHA
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Prepare Android SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ANDROID_HOME:?ANDROID_HOME is missing}"
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [[ ! -x "$SDKM" ]]; then
+            SDKM="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager -print -quit)"
+          fi
+          test -x "$SDKM" || { echo "::error::Android sdkmanager was not found"; exit 1; }
+          "$SDKM" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+          chmod +x ./gradlew
+
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Enable KVM for hardware-accelerated emulator
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -e /dev/kvm || { echo "::error::/dev/kvm is unavailable"; exit 1; }
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run actual Android instrumentation + collect device evidence
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          emulator-boot-timeout: 600
+          # This MUST be one shell command. The emulator-runner executes each
+          # script line separately; spreading if/exit status across YAML lines
+          # silently invalidates exit-code evidence.
+          script: bash tools/run_android_device_checks.sh
+
+      - name: Upload real runtime screenshots, crash logs and test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kx-device-runtime-api-${{ matrix.api }
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            app/build/device-evidence/
+            app/build/reports/androidTests/
+            app/build/outputs/androidTest-results/
+            app/build/outputs/apk/androidTest/
