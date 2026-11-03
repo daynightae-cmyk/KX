@@ -229,8 +229,8 @@ is not presented as one.
 | BASE_SHA | `3654a0ff788ead2735b0d22ab997f36d25d0a1ad` |
 | IMPLEMENTATION_SHA | `ae64e2206b9bc218036317a0f11b128459ba0506` (PR head; `1d2ab73` is the implementation commit) |
 | PR | https://github.com/daynightae-cmyk/KX/pull/14 |
-| MERGE_SHA | pending |
-| ORIGIN_MAIN_SHA | pending |
+| MERGE_SHA | `d6dc659f66df9cb3f83b057ae7abdccf2685e3c8` |
+| ORIGIN_MAIN_SHA | `d6dc659f66df9cb3f83b057ae7abdccf2685e3c8` |
 
 CI on the exact implementation SHA:
 
@@ -239,6 +239,21 @@ Repository hygiene            pass  (run 41655231971)
 Build, lint and unit tests    pass  (run 41655231971)
 Android emulator API 26       pass  (run 41655230608)
 Android emulator API 35       pass  (run 41655230608)
+```
+
+Post-merge CI on `d6dc659`, with the tasks confirmed to have **executed** rather than
+restored from cache — the check that a green merge run actually means something:
+
+```
+Android CI (run 41657201778)
+  Task :app:testDebugUnitTest          executed, no FROM-CACHE / UP-TO-DATE marker
+  Task :app:lintDebug                  executed
+  Task :app:assembleDebug              executed
+  Task :app:assembleDebugAndroidTest   executed
+
+KX Android Device Runtime (run 41657201495)
+  API 26: tests="23" failures="0" errors="0" skipped="0"   crash-logcat 0 bytes
+  API 35: tests="23" failures="0" errors="0" skipped="0"   crash-logcat 0 bytes
 ```
 
 ## Status

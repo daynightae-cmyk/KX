@@ -132,3 +132,17 @@ Recorded during TASK_01 because it changes what later tasks may claim.
   a test result.
 - **Safe next action:** render at 200% font scale on an emulator once G4 device runs are
   extended with a `wm` font-scale step, or on a physical device.
+
+### NOT A GATE — third-party Vercel checks on every PR
+
+- Every pull request in this repository also shows two failing checks, **"Vercel"** and
+  **"Vercel Deployments"**, with `Account is blocked` at
+  `https://vercel.com/knowledge/why-is-my-account-deployment-blocked`.
+- They come from a Vercel GitHub App installed on the account, not from anything in this
+  repository, and they were already failing before TASK_03. **No workflow in
+  `.github/workflows/` depends on them** and no merge has been made on their account.
+- Recorded so a future reader does not mistake them for a broken gate, and so the real
+  gates — `Android CI` and `KX Android Device Runtime` — are the only ones cited as
+  evidence.
+- **Owner action only:** either resolve the Vercel account or remove the integration from
+  the repository. Nothing an implementation task can do about it.
