@@ -24,11 +24,37 @@ Valid statuses: NOT_STARTED, IN_PROGRESS, LOCALLY_VERIFIED, DEVICE_UNVERIFIED, B
 
 ## Current integrated head
 
-`origin/main = a692ff4dd86a53e82bd67e7c73ab26f5d564f9db` — Android CI green on this
-exact SHA (run 41603418054). TASK_00's feature merge was `98e6e46…`; main has since
-advanced by the evidence-docs commit and one CI cache-correctness fix
-(`4129256…`), so the merge SHA in the table above is the *task* merge, not the
-current head. Read `docs/evidence/TASK_00.md` for the full chain.
+`origin/main` advances with each accepted merge; read it live rather than trusting a
+number in this file. The chain so far, in order:
+
+| Merge | What it was | CI |
+|---|---|---|
+| `98e6e46` | PR #1 — TASK_00 implementation | run 41600267115 success |
+| `a692ff4` | PR #3 — render dir declared as Gradle task output | run 41603418054 success |
+| `143a0aa` | PR #4 — bounded startup read + safe test cleanup | run 41606402710 success |
+
+## TASK_00 reconciliation of parallel work
+
+Two other branches carried TASK_00 work alongside PR #1. Both were inspected, neither
+was discarded:
+
+- **PR #4 `agent/task-00-startup-deadline` — MERGED.** It fixed two real defects in the
+  code I shipped. (1) `PreferencesLaunchStateRepositoryTest.tearDown` called
+  `it.parentFile.deleteRecursively()` on directories it owned, so `parentFile` was the
+  **shared system temp directory** — a destructive test. It now deletes only a unique
+  per-test root. (2) `MainActivity` bounded the *system* splash at 3s, but the Compose
+  launch screen had no bound, so a store that never emits would sit on "Preparing"
+  forever; `readLaunchSnapshot()` now bounds the read itself and resolves as degraded.
+  Its secret-scan test also stopped swallowing an `IOException` that would have made
+  the security assertion pass vacuously. Verified locally with `--rerun-tasks`:
+  **44 tests, 0 failures**, lint clean, `assembleDebug` green.
+- **PR #2 `agent/kx-task-00-native-splash` — code NOT merged, branch retained.** It is a
+  second full TASK_00 implementation under package `com.knoux.kx`; merging it would
+  duplicate every screen, theme, route and test, which the owner directive forbids.
+  Two unique documents from it were salvaged: `NOTICE.md` (TASK_00 requires a
+  license/attribution note and PR #1 shipped without one — a real gap) and
+  `docs/AGENT_UNATTENDED_CONTINUATION.md`. Its `docs/ci/android.yml.example` is
+  superseded by the live `.github/workflows/ci.yml`, not discarded.
 
 ## External deferrals
 A task with a demonstrably complete, tested and merged provider-free supported scope may be `MERGED_VERIFIED` **only for that expressly limited scope**; list all optional `DEFERRED_EXTERNAL` features and their failures in `docs/BLOCKERS.md` and the task evidence. An external deferral is never a success claim about that feature.

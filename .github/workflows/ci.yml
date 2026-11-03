@@ -126,6 +126,11 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew --no-daemon :app:assembleDebug
 
+      - name: Verify APK asset and secret hygiene
+        # Proves the claims NOTICE.md makes, from the built artifact: no reference
+        # design PNG is packaged, no bundled font, no key material in any text entry.
+        run: python3 tools/verify_apk_asset_hygiene.py app/build/outputs/apk/debug/app-debug.apk
+
       - name: Compile instrumentation tests
         # Execution needs a device; compilation is verified here so the suite cannot
         # rot silently while device access is blocked.
