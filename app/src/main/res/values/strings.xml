@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Brand names are not translated. `app_name` stays "KX VPN" in every locale;
+        the tagline and body copy are localised in values-ar/strings.xml.
+    -->
+    <string name="app_name">KX VPN</string>
+
+    <string name="launch_tagline">Private network</string>
+    <string name="launch_preparing">Preparing</string>
+    <string name="launch_ready">Ready</string>
+    <string name="launch_no_tunnel_notice">This build contains no VPN connection. Nothing is routed or protected yet.</string>
+    <string name="launch_storage_degraded">Saved preferences could not be read, so setup is being shown again. Your device settings were not changed.</string>
+
+    <string name="welcome_title">Welcome</string>
+    <string name="welcome_body">First-run setup is not part of this build. No permission has been requested and no profile has been created.</string>
+    <string name="welcome_action">Start setup</string>
+    <string name="welcome_action_unavailable">Setup arrives with the onboarding slice and is intentionally unavailable here.</string>
+
+    <string name="home_title">Home</string>
+    <string name="home_body">Connection controls will appear here once the tunnel engine exists. There is no server, no traffic and no protection status in this build.</string>
+    <string name="home_action">Connect</string>
+    <string name="home_action_unavailable">No VPN engine is installed in this build, so connecting is not possible.</string>
+
+    <string name="placeholder_build_section">Build contents</string>
+    <string name="placeholder_build_detail">Brand identity, launch gate, theme system and navigation only.</string>
+</resources>

@@ -1,0 +1,167 @@
+name: Android CI
+
+# Gates G3 and G6 of docs/QUALITY_GATES.md.
+# Every job must exit non-zero on failure; nothing here is allowed to `|| true`.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Gradle wrapper checksums
+        # Rejects a wrapper jar that was swapped for a backdoored one.
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Verify reference asset hashes
+        run: |
+          set -euo pipefail
+          declare -A EXPECT=(
+            [00-brand-logo.png]=c0b92dd84d60f6f0938bff177d7066a2f74a3eab59ba282438abb76da5f8681e
+            [01-welcome.png]=464a7c4f7ff3bdb0c703578cb886cf942cdd09e6d09fb6dad149bdd9996458c6
+            [02-home-disconnected.png]=825c75b082fdb1e2c4528ad3f62c5b1b35b003b069d55773df39c7a995f3a28e
+            [03-server-selection.png]=8d2c742a10c9cdf0b2792c143479874891c1a28f930b323a6b0f6a572538c587
+            [04-connected-session.png]=f0cfe658e5f66dc9c6dbcdcd371fff0b825b2f30a32e9c089d5c811a32ffef30
+            [05-security-center.png]=d0a1f09af2dd856b2b4feb891167bf9994fa20c861960d5ec65d0506e104f218
+            [06-split-tunneling.png]=c9265fd7be8ae14d03296e32c3910158f6d4395b95c3bf6e7cb3241feabc9b3b
+            [07-advanced-network.png]=5b3214f408bd841409fc1a75ad01239a73c40f459ee5d2eafac55aa8a2d72022
+            [08-statistics.png]=a6c474b99a3c55bb9e4b6df265fc6ce3c89ca7b265302e53a0cb6b256b9852d0
+            [09-import-configuration.png]=670a2aea5230fd66b05d533f5f78a04d4200e520b483c9847dadad35497192ce
+            [10-profile-settings.png]=750319564b5965a0f71ef963f2eb4c3709b0edfbfb2a8ec7b947c7c406e57be6
+          )
+          status=0
+          for name in "${!EXPECT[@]}"; do
+            path="assets/reference/$name"
+            if [[ ! -f "$path" ]]; then
+              echo "::error::missing reference asset $path"
+              status=1
+              continue
+            fi
+            actual=$(sha256sum "$path" | cut -d' ' -f1)
+            if [[ "$actual" != "${EXPECT[$name]}" ]]; then
+              echo "::error::reference asset $name changed: expected ${EXPECT[$name]} got $actual"
+              status=1
+            else
+              echo "ok  $name"
+            fi
+          done
+          exit $status
+
+      - name: Scan for committed secret material
+        # docs/SECURITY_MODEL.md forbids private/preshared keys ever reaching Git.
+        run: |
+          set -euo pipefail
+          if grep -rInE --exclude-dir=.git \
+              'BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY|private_key[[:space:]]*=[[:space:]]*[A-Za-z0-9+/]{20,}|preshared_key[[:space:]]*=[[:space:]]*[A-Za-z0-9+/]{20,}' . ; then
+            echo "::error::possible private key material committed"
+            exit 1
+          fi
+          echo "no private key material found"
+
+  build:
+    name: Build, lint and unit tests
+    needs: hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        # android-actions/setup-android@v3 is not used here: it tries to install the
+        # long-obsolete `tools` package, which no longer exists, and dies with
+        # "Failed to find package 'tools'". GitHub's ubuntu runner already ships a
+        # usable SDK and exports ANDROID_HOME, so we verify it and add only the
+        # components this build needs.
+        run: |
+          set -euo pipefail
+          : "${ANDROID_HOME:?ANDROID_HOME is not set on this runner}"
+          echo "SDK root: $ANDROID_HOME"
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          [[ -x "$SDKM" ]] || SDKM="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -1)"
+          yes | "$SDKM" --licenses >/dev/null 2>&1 || true
+          "$SDKM" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0" "build-tools;35.0.0" >/dev/null
+          echo "platforms:";    ls "$ANDROID_HOME/platforms"
+          echo "build-tools:";  ls "$ANDROID_HOME/build-tools"
+
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Verify toolchain
+        run: |
+          # Belt and braces: the exec bit is set in the index via
+          # `git update-index --chmod=+x gradlew`, but a checkout on a filesystem that
+          # ignores modes would otherwise fail with "Permission denied".
+          chmod +x gradlew
+          ./gradlew --version
+          echo "ANDROID_HOME=$ANDROID_HOME"
+
+      - name: Kotlin/JVM unit tests (incl. Robolectric renders)
+        run: ./gradlew --no-daemon :app:testDebugUnitTest
+
+      - name: Android Lint
+        run: ./gradlew --no-daemon :app:lintDebug
+
+      - name: Assemble debug APK
+        run: ./gradlew --no-daemon :app:assembleDebug
+
+      - name: Compile instrumentation tests
+        # Execution needs a device; compilation is verified here so the suite cannot
+        # rot silently while device access is blocked.
+        run: ./gradlew --no-daemon :app:assembleDebugAndroidTest
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: kx-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload unit test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-report
+          path: app/build/reports/tests/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results*
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload rendered screenshots
+        # The Robolectric renders are the visual evidence for gates without a device.
+        uses: actions/upload-artifact@v4
+        with:
+          name: kx-rendered-screenshots
+          path: app/build/kx-screenshots/**.png
+          if-no-files-found: error
+          retention-days: 30

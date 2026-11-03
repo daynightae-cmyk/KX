@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    allowBackup is false in the manifest, so these rules are the second line of
+    defence if a later task ever enables transport. The launch preferences are
+    excluded explicitly rather than by omission.
+
+    When TASK_09 brings real config import, this file must keep excluding the
+    encrypted tunnel store — a backup that can extract a private key without the
+    user authorising it is the exact failure docs/SECURITY_MODEL.md calls out.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="pref" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="pref" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+    </device-transfer>
+</data-extraction-rules>

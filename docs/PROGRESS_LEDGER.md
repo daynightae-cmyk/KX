@@ -1,10 +1,14 @@
 # KX VPN — immutable evidence-based progress ledger
 
-As of initial planning commit, **all implementation tasks NOT_STARTED**. This repository only contains reference PNGs and task documents. No code, tests, CI, gateway, APK or production release was created as part of this setup.
+At the planning baseline (`705af83`) this repository contained only reference PNGs and
+task documents — no code, tests, CI, gateway, APK or release. That statement no longer
+holds: from TASK_00 onward there is a real Android application in the tree. Each row
+below records only what has primary evidence, and each task's full evidence lives in
+`docs/evidence/TASK_XX.md`.
 
 | Task | Status | Implementation SHA | PR | Merge SHA | Test/device proof |
 | --- | --- | --- | --- | --- | --- |
-| TASK_00 | NOT_STARTED | none | none | none | NOT_RUN |
+| TASK_00 | PR_OPEN | see evidence | see evidence | pending | 33/33 JVM unit tests pass, lint clean, debug+test APKs built, 10 Compose renders captured. **DEVICE_UNVERIFIED** — no emulator/device available (BLOCKER-001). |
 | TASK_01 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_02 | NOT_STARTED | none | none | none | NOT_RUN |
 | TASK_03 | NOT_STARTED | none | none | none | NOT_RUN |

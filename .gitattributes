@@ -1,0 +1,26 @@
+# Normalise line endings so a Windows checkout and a Linux CI runner do not fight
+# over every file. Text is stored LF in the repository.
+* text=auto eol=lf
+
+# Windows batch scripts must keep CRLF or they stop running.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Never let Git touch binary payloads.
+*.png binary
+*.jpg binary
+*.webp binary
+*.apk binary
+*.aar binary
+*.jar binary
+*.keystore binary
+*.jks binary
+*.rar binary
+*.zip binary
+
+# Keep generated diffs readable.
+*.svg text
+*.xml text
+*.kt text
+*.kts text
+*.py text

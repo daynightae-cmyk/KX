@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!--
+        Base window theme. Compose owns all in-app colour; this only has to make the
+        window background match the Compose surface so there is no flash of the wrong
+        theme between the system splash and the first frame.
+    -->
+    <style name="Theme.KX.Base" parent="android:Theme.DeviceDefault.Light.NoActionBar">
+        <item name="android:windowBackground">@color/kx_day_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+    </style>
+
+    <style name="Theme.KX" parent="Theme.KX.Base" />
+
+    <!--
+        Applied to both <application> and the launcher activity, then swapped to
+        Theme.KX by installSplashScreen() via postSplashScreenTheme.
+        Theme.SplashScreen resolves to android:Theme.DeviceDefault.DayNight, so no
+        AppCompat dependency is required — verified against the 1.2.0 AAR.
+    -->
+    <style name="Theme.KX.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/kx_day_splash</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_kx_brand_orb</item>
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.KX</item>
+    </style>
+</resources>

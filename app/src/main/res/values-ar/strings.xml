@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">KX VPN</string>
+
+    <string name="launch_tagline">شبكة خاصة</string>
+    <string name="launch_preparing">جارٍ التحضير</string>
+    <string name="launch_ready">جاهز</string>
+    <string name="launch_no_tunnel_notice">لا يحتوي هذا الإصدار على أي اتصال VPN. لا شيء مُوجَّه أو محمي حتى الآن.</string>
+    <string name="launch_storage_degraded">تعذّرت قراءة الإعدادات المحفوظة، لذلك تُعرض خطوة الإعداد من جديد. لم يتم تغيير إعدادات جهازك.</string>
+
+    <string name="welcome_title">مرحبًا</string>
+    <string name="welcome_body">الإعداد الأول ليس جزءًا من هذا الإصدار. لم يُطلب أي إذن ولم يُنشأ أي ملف تعريفي.</string>
+    <string name="welcome_action">بدء الإعداد</string>
+    <string name="welcome_action_unavailable">يأتي الإعداد مع مرحلة الترحيب، وهو غير متاح هنا بشكل مقصود.</string>
+
+    <string name="home_title">الرئيسية</string>
+    <string name="home_body">ستظهر أدوات التحكم بالاتصال هنا عند وجود محرك النفق. لا يوجد خادم ولا حركة مرور ولا حالة حماية في هذا الإصدار.</string>
+    <string name="home_action">اتصال</string>
+    <string name="home_action_unavailable">لا يوجد محرك VPN مثبَّت في هذا الإصدار، لذلك لا يمكن الاتصال.</string>
+
+    <string name="placeholder_build_section">محتويات الإصدار</string>
+    <string name="placeholder_build_detail">الهوية البصرية وبوابة الانطلاق ونظام السمات والتنقل فقط.</string>
+</resources>
