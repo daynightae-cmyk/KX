@@ -16,6 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import com.kx.vpn.R
 import com.kx.vpn.data.LaunchStateRepository
 import com.kx.vpn.domain.LaunchSnapshot
@@ -26,6 +29,7 @@ import com.kx.vpn.ui.brand.KXButtonStyle
 import com.kx.vpn.ui.brand.KXOrb
 import com.kx.vpn.ui.launch.LaunchScreen
 import com.kx.vpn.ui.launch.LaunchViewModel
+import com.kx.vpn.ui.launch.KXEntryTags
 import com.kx.vpn.ui.placeholder.PlaceholderScreen
 import com.kx.vpn.ui.theme.KXDimens
 import com.kx.vpn.ui.theme.KXMotionSpec
@@ -312,6 +316,16 @@ class BrandRenderTest {
                 resolved = destination to degraded
             })
         }
+        compose.waitUntil(timeoutMillis = 5_000) {
+            runCatching {
+                compose.onNodeWithTag(KXEntryTags.EnterOrb).assertIsEnabled()
+            }.isSuccess
+        }
+        org.junit.Assert.assertNull(
+            "resolved launch must not navigate without an explicit tap",
+            resolved,
+        )
+        compose.onNodeWithTag(KXEntryTags.EnterOrb).performClick()
         compose.waitUntil(timeoutMillis = 5_000) { resolved != null }
         org.junit.Assert.assertEquals(
             com.kx.vpn.domain.LaunchDestination.Welcome to true,

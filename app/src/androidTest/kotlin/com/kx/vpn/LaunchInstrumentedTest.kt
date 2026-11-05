@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
@@ -13,6 +14,7 @@ import androidx.compose.ui.test.printToLog
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kx.vpn.ui.brand.KXOrbTags
+import com.kx.vpn.ui.launch.KXEntryTags
 import kotlinx.coroutines.flow.first
 import org.junit.Rule
 import org.junit.Test
@@ -39,20 +41,38 @@ class LaunchInstrumentedTest {
         composeRule.onAllNodesWithText(value).fetchSemanticsNodes().isNotEmpty()
 
     /**
-     * Compose idleness alone does not wait for asynchronous DataStore IO, and a test that
-     * only waits for idle can pass while the splash is still on screen — which would make
-     * every later assertion vacuous.
-     *
-     * From TASK_01 the first-run destination is identified by the wordmark subtitle
-     * rather than `welcome_title`: the welcome screen renders the brand lockup
-     * "KX / Private VPN", not the TASK_00 placeholder heading.
+     * DataStore and the 3D intro must resolve before the user can tap KX.
+     * This helper uses the actual click; the app must never navigate itself.
      */
     private fun awaitDestination() {
         val welcomeSub = text(R.string.welcome_wordmark_sub)
         val home = text(R.string.home_title)
         composeRule.waitUntil(timeoutMillis = 10_000) {
+            hasNodes(text(R.string.launch_enter_hint)) &&
+                runCatching {
+                    composeRule.onNodeWithTag(KXEntryTags.EnterOrb).assertIsEnabled()
+                }.isSuccess
+        }
+        composeRule.onNodeWithTag(KXEntryTags.EnterOrb).performClick()
+        composeRule.waitUntil(timeoutMillis = 10_000) {
             hasNodes(welcomeSub) || hasNodes(home)
         }
+    }
+
+    @Test
+    fun launchDoesNotAutoEnterWhenReady() {
+        val welcomeSub = text(R.string.welcome_wordmark_sub)
+        val home = text(R.string.home_title)
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            hasNodes(text(R.string.launch_enter_hint)) &&
+                runCatching {
+                    composeRule.onNodeWithTag(KXEntryTags.EnterOrb).assertIsEnabled()
+                }.isSuccess
+        }
+        org.junit.Assert.assertFalse("welcome must require a tap", hasNodes(welcomeSub))
+        org.junit.Assert.assertFalse("home must require a tap", hasNodes(home))
+        composeRule.onNodeWithTag(KXEntryTags.EnterOrb).assertIsDisplayed()
+        captureLaunch("interactive-launch-gate")
     }
 
     private fun onWelcome() = hasNodes(text(R.string.welcome_wordmark_sub))
@@ -179,11 +199,48 @@ class LaunchInstrumentedTest {
     }
 
     @Test
+    fun activityRecreationBeforeEntryStillRequiresAnExplicitTap() {
+        val hint = text(R.string.launch_enter_hint)
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            hasNodes(hint) &&
+                runCatching {
+                    composeRule.onNodeWithTag(KXEntryTags.EnterOrb).assertIsEnabled()
+                }.isSuccess
+        }
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            hasNodes(hint) &&
+                runCatching {
+                    composeRule.onNodeWithTag(KXEntryTags.EnterOrb).assertIsEnabled()
+                }.isSuccess
+        }
+        org.junit.Assert.assertFalse(
+            "recreation must not auto-enter welcome",
+            hasNodes(text(R.string.welcome_wordmark_sub)),
+        )
+        org.junit.Assert.assertFalse(
+            "recreation must not auto-enter home",
+            hasNodes(text(R.string.home_title)),
+        )
+        composeRule.onNodeWithTag(KXEntryTags.EnterOrb).performClick()
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            hasNodes(text(R.string.welcome_wordmark_sub)) ||
+                hasNodes(text(R.string.home_title))
+        }
+    }
+
+    @Test
     fun activityRecreationReturnsAValidDestinationWithoutAcceptingSetup() {
         awaitDestination()
         val before = launchSnapshot()
         composeRule.activityRule.scenario.recreate()
-        awaitDestination()
+        // Navigation restores the destination already entered by the user.
+        // A new tap must NOT be required when the system recreates the Activity
+        // after the welcome/home route was already reached.
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            hasNodes(text(R.string.welcome_wordmark_sub)) ||
+                hasNodes(text(R.string.home_title))
+        }
         val after = launchSnapshot()
         org.junit.Assert.assertEquals(
             "recreation must not silently complete onboarding",
