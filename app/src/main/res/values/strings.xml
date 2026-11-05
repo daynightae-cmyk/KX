@@ -9,7 +9,8 @@
     <string name="launch_tagline">Private network</string>
     <string name="launch_preparing">Preparing</string>
     <string name="launch_ready">Ready</string>
-    <string name="launch_no_tunnel_notice">This build contains no VPN connection. Nothing is routed or protected yet.</string>
+    <string name="launch_enter_hint">Tap the KX emblem to enter</string>
+    <string name="launch_no_tunnel_notice">VPN protection only applies while a verified tunnel is connected. This screen does not establish a connection.</string>
     <string name="launch_storage_degraded">Saved preferences could not be read, so setup is being shown again. Your device settings were not changed.</string>
 
 

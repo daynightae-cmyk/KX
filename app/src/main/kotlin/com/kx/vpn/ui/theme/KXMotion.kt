@@ -26,7 +26,7 @@ data class KXMotionSpec(
 ) {
     companion object {
         val Full = KXMotionSpec(
-            introMillis = 900,
+            introMillis = 1_450,
             orbitPeriodMillis = 18_000,
             haloPeriodMillis = 6_000,
             reduced = false,

@@ -4,6 +4,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,10 +18,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -35,6 +41,11 @@ import com.kx.vpn.ui.theme.KXPalette
 import com.kx.vpn.ui.theme.KXTypography
 import com.kx.vpn.ui.theme.LocalKXGlass
 import com.kx.vpn.ui.theme.LocalKXMotion
+
+/** Stable automation hook for the explicit human-entry action. */
+object KXEntryTags {
+    const val EnterOrb = "kx_enter_orb"
+}
 
 /**
  * The branded launch experience, shown after the system splash and before the first
@@ -67,17 +78,11 @@ fun LaunchScreen(
         )
     }
 
-    // Advance only when both are true: the store answered, and the intro settled.
-    //
-    // The effect is keyed on a settled *boolean*, not on intro.value — keying on the
-    // animating float would tear the coroutine down and restart it on every frame.
+    // Never auto-enter: readiness unlocks the emblem, but only a real tap navigates.
+    // Track clicks locally so a rapid double tap cannot enqueue two destinations.
     val resolved = state as? LaunchUiState.Resolved
-    val introSettled = intro.value >= 1f
-    LaunchedEffect(resolved, introSettled) {
-        if (resolved != null && introSettled) {
-            onNavigate(resolved.destination, resolved.storageDegraded)
-        }
-    }
+    var entered by remember { mutableStateOf(false) }
+    val canEnter = resolved != null && intro.value >= 1f && !entered
 
     val shortestSide = LocalConfiguration.current.screenWidthDp.dp
     val orbSize = when {
@@ -105,8 +110,28 @@ fun LaunchScreen(
             KXOrb(
                 size = orbSize,
                 modifier = Modifier
-                    .scale(0.92f + 0.08f * intro.value)
-                    .alpha(intro.value),
+                    // Native 3D perspective, without replacing the source artwork.
+                    // The intro settles before the user can enter.
+                    .graphicsLayer {
+                        rotationY = -20f * (1f - intro.value)
+                        rotationX = 12f * (1f - intro.value)
+                        cameraDistance = 1600f * density
+                        shadowElevation = (12f * density) * intro.value
+                    }
+                    .scale(0.84f + 0.16f * intro.value)
+                    .alpha(intro.value)
+                    .testTag(KXEntryTags.EnterOrb)
+                    .clickable(
+                        enabled = canEnter,
+                        role = Role.Button,
+                        onClick = {
+                            val ready = resolved
+                            if (!entered && ready != null) {
+                                entered = true
+                                onNavigate(ready.destination, ready.storageDegraded)
+                            }
+                        },
+                    ),
             )
 
             Spacer(modifier = Modifier.height(KXDimens.SpaceXl))
@@ -121,14 +146,14 @@ fun LaunchScreen(
 
             Text(
                 text = stringResource(
-                    if (resolved == null) R.string.launch_preparing else R.string.launch_ready,
+                    if (canEnter) R.string.launch_enter_hint else R.string.launch_preparing,
                 ),
                 style = KXTypography.Caption.copy(color = glass.textSecondary),
                 textAlign = TextAlign.Center,
             )
         }
 
-        // Footnote states the security truth of this build: nothing is connected yet.
+        // Footnote states the security truth without making claims about live tunnel state.
         Text(
             text = stringResource(R.string.launch_no_tunnel_notice),
             style = KXTypography.Caption.copy(color = KXPalette.NeutralHint),

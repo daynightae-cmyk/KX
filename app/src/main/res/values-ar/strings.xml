@@ -5,7 +5,8 @@
     <string name="launch_tagline">شبكة خاصة</string>
     <string name="launch_preparing">جارٍ التحضير</string>
     <string name="launch_ready">جاهز</string>
-    <string name="launch_no_tunnel_notice">لا يحتوي هذا الإصدار على أي اتصال VPN. لا شيء مُوجَّه أو محمي حتى الآن.</string>
+    <string name="launch_enter_hint">اضغط على شعار KX للدخول</string>
+    <string name="launch_no_tunnel_notice">تعمل حماية VPN فقط عند اتصال نفق تم التحقق منه. هذه الشاشة لا تنشئ اتصالًا.</string>
     <string name="launch_storage_degraded">تعذّرت قراءة الإعدادات المحفوظة، لذلك تُعرض خطوة الإعداد من جديد. لم يتم تغيير إعدادات جهازك.</string>
 
 
