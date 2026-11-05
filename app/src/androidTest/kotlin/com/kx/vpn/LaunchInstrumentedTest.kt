@@ -199,11 +199,48 @@ class LaunchInstrumentedTest {
     }
 
     @Test
+    fun activityRecreationBeforeEntryStillRequiresAnExplicitTap() {
+        val hint = text(R.string.launch_enter_hint)
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            hasNodes(hint) &&
+                runCatching {
+                    composeRule.onNodeWithTag(KXEntryTags.EnterOrb).assertIsEnabled()
+                }.isSuccess
+        }
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            hasNodes(hint) &&
+                runCatching {
+                    composeRule.onNodeWithTag(KXEntryTags.EnterOrb).assertIsEnabled()
+                }.isSuccess
+        }
+        org.junit.Assert.assertFalse(
+            "recreation must not auto-enter welcome",
+            hasNodes(text(R.string.welcome_wordmark_sub)),
+        )
+        org.junit.Assert.assertFalse(
+            "recreation must not auto-enter home",
+            hasNodes(text(R.string.home_title)),
+        )
+        composeRule.onNodeWithTag(KXEntryTags.EnterOrb).performClick()
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            hasNodes(text(R.string.welcome_wordmark_sub)) ||
+                hasNodes(text(R.string.home_title))
+        }
+    }
+
+    @Test
     fun activityRecreationReturnsAValidDestinationWithoutAcceptingSetup() {
         awaitDestination()
         val before = launchSnapshot()
         composeRule.activityRule.scenario.recreate()
-        awaitDestination()
+        // Navigation restores the destination already entered by the user.
+        // A new tap must NOT be required when the system recreates the Activity
+        // after the welcome/home route was already reached.
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            hasNodes(text(R.string.welcome_wordmark_sub)) ||
+                hasNodes(text(R.string.home_title))
+        }
         val after = launchSnapshot()
         org.junit.Assert.assertEquals(
             "recreation must not silently complete onboarding",
